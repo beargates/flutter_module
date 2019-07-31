@@ -1,0 +1,6 @@
+{
+  "name": "Container",
+  "child": {
+    "name": "other widget"
+  }
+}

@@ -1,8 +1,3 @@
-# flutter_module
+# 仿抖音app
 
-A new flutter module project.
-
-## Getting Started
-
-For help getting started with Flutter, view our online
-[documentation](https://flutter.dev/).
+可嵌入已存在native app或单独使用

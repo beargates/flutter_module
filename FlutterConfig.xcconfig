@@ -1,0 +1,12 @@
+//
+//  FlutterConfig.xcconfig
+//  huohuaeduparent
+//
+//  Created by 杜泽峰 on 2019/7/16.
+//  Copyright © 2019 wanduoduo. All rights reserved.
+//
+
+// Configuration settings file format documentation can be found at:
+// https://help.apple.com/xcode/#/dev745c5c974
+
+#include "./.ios/Flutter/Generated.xcconfig"

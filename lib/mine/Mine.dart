@@ -1,11 +1,7 @@
 import 'package:flutter/material.dart';
-import '../utils/Navigation.dart';
 
 //import '../components/camera/Camera.dart';
 import '../components/image-picker/ImagePicker.dart';
-
-//import '../components/image-picker/MultiImagePicker.dart';
-import 'package:camera/camera.dart';
 
 class Mine extends StatefulWidget {
   @override
@@ -14,14 +10,12 @@ class Mine extends StatefulWidget {
 
 class _MineState extends State<Mine> with SingleTickerProviderStateMixin {
   List<Tab> myTabs;
-  TabController _tabController;
   ScrollController _controller = ScrollController();
 
   @override
   void initState() {
     super.initState();
     myTabs = tabs();
-    _tabController = TabController(vsync: this, length: myTabs.length);
     _controller.addListener(() {
       print(_controller.offset);
     });
@@ -29,7 +23,6 @@ class _MineState extends State<Mine> with SingleTickerProviderStateMixin {
 
   @override
   void dispose() {
-    _tabController.dispose();
     _controller.dispose();
     super.dispose();
   }
@@ -212,99 +205,81 @@ class _MineState extends State<Mine> with SingleTickerProviderStateMixin {
         child: Text('$i'),
       );
     }).toList();
-    ;
   }
 
-  Widget tabView() {
-    Widget tabBar = Container(
-//        color: Colors.white,
-        child: TabBar(
-      controller: _tabController,
-      tabs: myTabs,
-      isScrollable: true,
-      indicatorColor: Colors.redAccent[400],
-      labelColor: Colors.redAccent[400],
-      unselectedLabelColor: Colors.black87,
-    ));
-
-    TabBarView tabBarView = TabBarView(
-        controller: _tabController,
-        children: myTabs.map((Tab tab) {
-          return ListView.builder(
-              // 保存滚动位置
-              key: PageStorageKey(myTabs.indexOf(tab)),
-              controller: _controller,
-              padding: EdgeInsets.all(8.0),
-              itemCount: 10,
-              itemBuilder: (BuildContext context, int index) {
-                return Container();
-              });
-        }).toList());
-    return Column(
-      children: <Widget>[
-        tabBar,
-        Expanded(
-          child: tabBarView,
-        )
-      ],
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    Widget tabBar = TabBar(
-      controller: _tabController,
+  Widget tabBar() {
+    return TabBar(
       tabs: myTabs,
       isScrollable: true,
       indicatorColor: Colors.white,
       labelColor: Colors.white,
       unselectedLabelColor: Colors.grey,
     );
+  }
 
-    TabBarView tabBarView = TabBarView(
-      controller: _tabController,
-      children: myTabs.map((Tab tab) {
-        return ListView.builder(
-            // 保存滚动位置
-            key: PageStorageKey(myTabs.indexOf(tab)),
-            controller: _controller,
-            padding: EdgeInsets.all(8.0),
-            itemCount: 10,
-            itemBuilder: (BuildContext context, int index) {
-              return Container(
-                height: 100,
-                child: Text(
-                  '$index',
-                  style: TextStyle(color: Colors.red),
-                ),
+  Widget tabBarView() {
+    return TabBarView(
+      children: myTabs.map((index) {
+        return SafeArea(
+          top: false,
+          bottom: false,
+          child: Builder(
+            builder: (BuildContext context) {
+              return CustomScrollView(
+                key: PageStorageKey<String>('$index'),
+                slivers: <Widget>[
+                  SliverOverlapInjector(
+                    handle: NestedScrollView.sliverOverlapAbsorberHandleFor(
+                        context),
+                  ),
+                  SliverPadding(
+                    padding: const EdgeInsets.all(8.0),
+                    sliver: SliverFixedExtentList(
+                      itemExtent: 48.0,
+                      delegate: SliverChildBuilderDelegate(
+                        (BuildContext context, int index) {
+                          return ListTile(
+                            title: Text('Item $index'),
+                          );
+                        },
+                        childCount: 30,
+                      ),
+                    ),
+                  ),
+                ],
               );
-            });
+            },
+          ),
+        );
       }).toList(),
     );
-    return CustomScrollView(
-      slivers: <Widget>[
-        SliverToBoxAdapter(
-          child: baseView(),
-        ),
-        SliverAppBar(
-          title: Text('社会银儿'),
-          expandedHeight: 100.0,
-//          floating: true,
-//           snap: snap,
-          pinned: true,
-          bottom: tabBar,
-        ),
-        SliverToBoxAdapter(
-          child: Container(
-            height: 500,
-            child: Column(
-              children: <Widget>[
-                Expanded(child: tabBarView),
-              ],
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return DefaultTabController(
+      length: myTabs.length,
+      child: NestedScrollView(
+        headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
+          // These are the slivers that show up in the "outer" scroll view.
+          return <Widget>[
+            SliverToBoxAdapter(
+              child: baseView(),
             ),
-          ),
-        ),
-      ],
+            SliverOverlapAbsorber(
+              handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),
+              child: SliverAppBar(
+                title: const Text('Books'),
+                pinned: true,
+                expandedHeight: 150.0,
+                forceElevated: innerBoxIsScrolled,
+                bottom: tabBar(),
+              ),
+            ),
+          ];
+        },
+        body: tabBarView(),
+      ),
     );
   }
 }

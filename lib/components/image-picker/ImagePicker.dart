@@ -50,9 +50,6 @@ class _MyHomePageState extends State<MyHomePage> {
       });
     } else {
       try {
-        List l = List(3);
-        l.fillRange(0, 3);
-        print(l);
 //        List list = await pickAsset(context);
 //        print(list);
         _imageFile = await ImagePicker.pickImage(source: source);

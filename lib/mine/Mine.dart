@@ -47,49 +47,53 @@ class _MineState extends State<Mine> with SingleTickerProviderStateMixin {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
-          Row(
-            children: <Widget>[
-              Container(
-                width: 100,
-                height: 100,
-                child: CircleAvatar(
-                  backgroundImage: AssetImage('assets/avatar.png'),
-                ),
-              ),
-              Expanded(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 8),
-                  child: FlatButton(
-                    color: Color(0xff3a3a43),
-                    textColor: Colors.white,
-                    padding: EdgeInsets.symmetric(vertical: 14),
-                    child: Text(
-                      '编辑资料',
-                      style: TextStyle(fontSize: 18),
-                    ),
-                    onPressed: () {
-                      Navigator.of(context).push(
-                        new MaterialPageRoute(
-                          builder: (context) {
-                            return MyHomePage();
-                          },
-                        ),
-                      );
-                    },
+//          todo translate溢出容器后，溢出部分被切掉了，有可能是被appBar盖住了
+          Transform.translate(
+            offset: Offset(0, -10),
+            child: Row(
+              children: <Widget>[
+                Container(
+                  width: 100,
+                  height: 100,
+                  child: CircleAvatar(
+                    backgroundImage: AssetImage('assets/avatar.png'),
                   ),
                 ),
-              ),
-              Container(
-                color: Color(0xff3a3a43),
-                padding: EdgeInsets.all(1.5),
-                child: IconButton(
-                  icon: Icon(Icons.group_add),
-                  color: Colors.white,
-                  iconSize: 34,
-                  onPressed: () {},
+                Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 8),
+                    child: FlatButton(
+                      color: Color(0xff3a3a43),
+                      textColor: Colors.white,
+                      padding: EdgeInsets.symmetric(vertical: 14),
+                      child: Text(
+                        '编辑资料',
+                        style: TextStyle(fontSize: 18),
+                      ),
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          new MaterialPageRoute(
+                            builder: (context) {
+                              return MyHomePage();
+                            },
+                          ),
+                        );
+                      },
+                    ),
+                  ),
                 ),
-              )
-            ],
+                Container(
+                  color: Color(0xff3a3a43),
+                  padding: EdgeInsets.all(1.5),
+                  child: IconButton(
+                    icon: Icon(Icons.group_add),
+                    color: Colors.white,
+                    iconSize: 34,
+                    onPressed: () {},
+                  ),
+                )
+              ],
+            ),
           ),
           Container(
             decoration: BoxDecoration(
@@ -273,6 +277,18 @@ class _MineState extends State<Mine> with SingleTickerProviderStateMixin {
         headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
           // These are the slivers that show up in the "outer" scroll view.
           return <Widget>[
+            SliverAppBar(
+              backgroundColor: bgColor,
+              primary: false,
+              automaticallyImplyLeading: false,
+              expandedHeight: 100,
+              flexibleSpace: FlexibleSpaceBar(
+                background: Image.asset(
+                  'assets/avatar.png',
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
             SliverToBoxAdapter(
               child: _baseView,
             ),

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter/services.dart';
-import '../course/index.dart';
 import '../feeds/index.dart';
 import '../trailing-center/TrailingCenter.dart';
 import '../mine/Mine.dart';

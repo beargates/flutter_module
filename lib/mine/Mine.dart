@@ -12,7 +12,28 @@ class Mine extends StatefulWidget {
   _MineState createState() => _MineState();
 }
 
-class _MineState extends State<Mine> {
+class _MineState extends State<Mine> with SingleTickerProviderStateMixin {
+  List<Tab> myTabs;
+  TabController _tabController;
+  ScrollController _controller = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    myTabs = tabs();
+    _tabController = TabController(vsync: this, length: myTabs.length);
+    _controller.addListener(() {
+      print(_controller.offset);
+    });
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    _controller.dispose();
+    super.dispose();
+  }
+
   Widget baseView() {
     return Container(
       color: Color(0xFF151722),
@@ -185,16 +206,116 @@ class _MineState extends State<Mine> {
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
+  List<Tab> tabs() {
+    return List.generate(3, (i) {
+      return Tab(
+        child: Text('$i'),
+      );
+    }).toList();
+    ;
+  }
+
+  Widget tabView() {
+    Widget tabBar = Container(
+//        color: Colors.white,
+        child: TabBar(
+      controller: _tabController,
+      tabs: myTabs,
+      isScrollable: true,
+      indicatorColor: Colors.redAccent[400],
+      labelColor: Colors.redAccent[400],
+      unselectedLabelColor: Colors.black87,
+    ));
+
+    TabBarView tabBarView = TabBarView(
+        controller: _tabController,
+        children: myTabs.map((Tab tab) {
+          return ListView.builder(
+              // 保存滚动位置
+              key: PageStorageKey(myTabs.indexOf(tab)),
+              controller: _controller,
+              padding: EdgeInsets.all(8.0),
+              itemCount: 10,
+              itemBuilder: (BuildContext context, int index) {
+                return Container();
+              });
+        }).toList());
     return Column(
       children: <Widget>[
-        Container(
-          color: Color(0xFF151722),
-          height: 100,
-        ),
-        baseView(),
+        tabBar,
+        Expanded(
+          child: tabBarView,
+        )
       ],
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    Widget tabBar = Container(
+//        color: Colors.white,
+        child: TabBar(
+      controller: _tabController,
+      tabs: myTabs,
+      isScrollable: true,
+      indicatorColor: Colors.redAccent[400],
+      labelColor: Colors.redAccent[400],
+      unselectedLabelColor: Colors.black87,
+    ));
+
+    TabBarView tabBarView = TabBarView(
+        controller: _tabController,
+        children: myTabs.map((Tab tab) {
+          return ListView.builder(
+              // 保存滚动位置
+              key: PageStorageKey(myTabs.indexOf(tab)),
+              controller: _controller,
+              padding: EdgeInsets.all(8.0),
+              itemCount: 10,
+              itemBuilder: (BuildContext context, int index) {
+                return Container(
+                  height: 100,
+                  child: Text(
+                    '$index',
+                    style: TextStyle(color: Colors.red),
+                  ),
+                );
+              });
+        }).toList());
+    return DefaultTabController(
+      length: 3,
+      child: CustomScrollView(
+        slivers: <Widget>[
+          SliverAppBar(
+//          actions: <Widget>[
+//            _buildAction(),
+//          ],
+            title: Text('社会银儿'),
+//          backgroundColor: Theme.of(context).accentColor,
+            expandedHeight: 100.0,
+//            flexibleSpace: FlexibleSpaceBar(
+//            title: baseView(),
+//              background: Column(
+//                children: <Widget>[],
+//              ),
+//            ),
+            // floating: floating,
+            // snap: snap,
+            pinned: true,
+          ),
+          SliverFillRemaining(
+            child: Column(
+              children: <Widget>[
+                baseView(),
+                tabBar,
+                Expanded(
+                  child: tabBarView,
+                )
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

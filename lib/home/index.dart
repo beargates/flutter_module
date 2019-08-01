@@ -4,7 +4,7 @@ import 'dart:io';
 import 'package:flutter/services.dart';
 import '../feeds/index.dart';
 import '../follow/index.dart';
-import '../mine/Mine.dart';
+import '../mine/index.dart';
 import '../utils/Webview.dart';
 
 class Home extends StatefulWidget {

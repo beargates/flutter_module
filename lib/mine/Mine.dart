@@ -252,70 +252,59 @@ class _MineState extends State<Mine> with SingleTickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    Widget tabBar = Container(
-//        color: Colors.white,
-        child: TabBar(
+    Widget tabBar = TabBar(
       controller: _tabController,
       tabs: myTabs,
       isScrollable: true,
-      indicatorColor: Colors.redAccent[400],
-      labelColor: Colors.redAccent[400],
-      unselectedLabelColor: Colors.black87,
-    ));
+      indicatorColor: Colors.white,
+      labelColor: Colors.white,
+      unselectedLabelColor: Colors.grey,
+    );
 
     TabBarView tabBarView = TabBarView(
-        controller: _tabController,
-        children: myTabs.map((Tab tab) {
-          return ListView.builder(
-              // 保存滚动位置
-              key: PageStorageKey(myTabs.indexOf(tab)),
-              controller: _controller,
-              padding: EdgeInsets.all(8.0),
-              itemCount: 10,
-              itemBuilder: (BuildContext context, int index) {
-                return Container(
-                  height: 100,
-                  child: Text(
-                    '$index',
-                    style: TextStyle(color: Colors.red),
-                  ),
-                );
-              });
-        }).toList());
-    return DefaultTabController(
-      length: 3,
-      child: CustomScrollView(
-        slivers: <Widget>[
-          SliverAppBar(
-//          actions: <Widget>[
-//            _buildAction(),
-//          ],
-            title: Text('社会银儿'),
-//          backgroundColor: Theme.of(context).accentColor,
-            expandedHeight: 100.0,
-//            flexibleSpace: FlexibleSpaceBar(
-//            title: baseView(),
-//              background: Column(
-//                children: <Widget>[],
-//              ),
-//            ),
-            // floating: floating,
-            // snap: snap,
-            pinned: true,
-          ),
-          SliverFillRemaining(
+      controller: _tabController,
+      children: myTabs.map((Tab tab) {
+        return ListView.builder(
+            // 保存滚动位置
+            key: PageStorageKey(myTabs.indexOf(tab)),
+            controller: _controller,
+            padding: EdgeInsets.all(8.0),
+            itemCount: 10,
+            itemBuilder: (BuildContext context, int index) {
+              return Container(
+                height: 100,
+                child: Text(
+                  '$index',
+                  style: TextStyle(color: Colors.red),
+                ),
+              );
+            });
+      }).toList(),
+    );
+    return CustomScrollView(
+      slivers: <Widget>[
+        SliverToBoxAdapter(
+          child: baseView(),
+        ),
+        SliverAppBar(
+          title: Text('社会银儿'),
+          expandedHeight: 100.0,
+//          floating: true,
+//           snap: snap,
+          pinned: true,
+          bottom: tabBar,
+        ),
+        SliverToBoxAdapter(
+          child: Container(
+            height: 500,
             child: Column(
               children: <Widget>[
-                baseView(),
-                tabBar,
-                Expanded(
-                  child: tabBarView,
-                )
+                Expanded(child: tabBarView),
               ],
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

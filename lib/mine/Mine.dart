@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:math' as math;
 
 //import '../components/camera/Camera.dart';
 import '../components/image-picker/ImagePicker.dart';
@@ -9,17 +10,29 @@ class Mine extends StatefulWidget {
 }
 
 class _MineState extends State<Mine> with SingleTickerProviderStateMixin {
-  List<Tab> myTabs;
+  List<Tab> myTabs = const [
+    Tab(child: Text('作品0')),
+    Tab(child: Text('动态0')),
+    Tab(child: Text('喜欢99'))
+  ];
   ScrollController _controller = ScrollController();
+  Color bgColor = const Color(0xFF151722);
+  List<String> videoList = [
+    'https://asset.txqn.huohua.cn/video/79663ecf-e10c-4452-9496-9eb8051b9af5.mp4',
+    'https://asset.txqn.huohua.cn/video/68b83e93-72b9-465d-9b13-8b100f1ec1c8.mp4',
+    'https://asset.txqn.huohua.cn/video/357cd502-f288-4aee-81bf-756e512d3fc9.mp4',
+    'https://asset.txqn.huohua.cn/video/5c9869bc-22e7-49b8-b259-43b8e2d85c5d.mp4',
+    'https://asset.txqn.huohua.cn/video/c5c233a5-1d70-4cb4-89f0-02fe90a78c6c.mp4',
+  ];
+  String thumbQuery = '?vframe/jpg/offset/0';
 
-  @override
-  void initState() {
-    super.initState();
-    myTabs = tabs();
-    _controller.addListener(() {
-      print(_controller.offset);
-    });
-  }
+//  @override
+//  void initState() {
+//    super.initState();
+//    _controller.addListener(() {
+//      print(_controller.offset);
+//    });
+//  }
 
   @override
   void dispose() {
@@ -29,7 +42,7 @@ class _MineState extends State<Mine> with SingleTickerProviderStateMixin {
 
   Widget baseView() {
     return Container(
-      color: Color(0xFF151722),
+      color: bgColor,
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -199,21 +212,16 @@ class _MineState extends State<Mine> with SingleTickerProviderStateMixin {
     );
   }
 
-  List<Tab> tabs() {
-    return List.generate(3, (i) {
-      return Tab(
-        child: Text('$i'),
-      );
-    }).toList();
-  }
-
   Widget tabBar() {
-    return TabBar(
-      tabs: myTabs,
-      isScrollable: true,
-      indicatorColor: Colors.white,
-      labelColor: Colors.white,
-      unselectedLabelColor: Colors.grey,
+    return Container(
+      color: bgColor,
+      child: TabBar(
+        tabs: myTabs,
+        isScrollable: true,
+        indicatorColor: Color(0xffE4CD60),
+        labelColor: Colors.white,
+        unselectedLabelColor: Colors.grey,
+      ),
     );
   }
 
@@ -232,19 +240,18 @@ class _MineState extends State<Mine> with SingleTickerProviderStateMixin {
                     handle: NestedScrollView.sliverOverlapAbsorberHandleFor(
                         context),
                   ),
-                  SliverPadding(
-                    padding: const EdgeInsets.all(8.0),
-                    sliver: SliverFixedExtentList(
-                      itemExtent: 48.0,
-                      delegate: SliverChildBuilderDelegate(
-                        (BuildContext context, int index) {
-                          return ListTile(
-                            title: Text('Item $index'),
-                          );
-                        },
-                        childCount: 30,
-                      ),
-                    ),
+                  SliverGrid.count(
+                    mainAxisSpacing: 2,
+                    crossAxisSpacing: 2,
+                    children: List.generate(40, (int i) {
+                      return Image.network(
+                        videoList.elementAt(math.Random().nextInt(4)) +
+                            thumbQuery,
+                        fit: BoxFit.cover,
+                        height: 200,
+                      );
+                    }).toList(),
+                    crossAxisCount: 3,
                   ),
                 ],
               );
@@ -257,6 +264,9 @@ class _MineState extends State<Mine> with SingleTickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    var _baseView = baseView();
+    var _tabBar = tabBar();
+    var _tabBarView = tabBarView();
     return DefaultTabController(
       length: myTabs.length,
       child: NestedScrollView(
@@ -264,22 +274,65 @@ class _MineState extends State<Mine> with SingleTickerProviderStateMixin {
           // These are the slivers that show up in the "outer" scroll view.
           return <Widget>[
             SliverToBoxAdapter(
-              child: baseView(),
+              child: _baseView,
             ),
             SliverOverlapAbsorber(
               handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),
-              child: SliverAppBar(
-                title: const Text('Books'),
+//              child: SliverAppBar(
+//                automaticallyImplyLeading: false,
+////                title: const Text('Books'),
+//                pinned: true,
+//                expandedHeight: 0.0,
+//                forceElevated: innerBoxIsScrolled,
+//                bottom: tabBar(),
+//              ),
+              child: SliverPersistentHeader(
                 pinned: true,
-                expandedHeight: 150.0,
-                forceElevated: innerBoxIsScrolled,
-                bottom: tabBar(),
+                delegate: _SliverAppBarDelegate(
+                  minHeight: 60.0,
+                  maxHeight: 60.0,
+                  child: _tabBar,
+                ),
               ),
             ),
           ];
         },
-        body: tabBarView(),
+        body: Container(
+          color: bgColor,
+          child: _tabBarView,
+        ),
       ),
     );
+  }
+}
+
+class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
+  _SliverAppBarDelegate({
+    @required this.minHeight,
+    @required this.maxHeight,
+    @required this.child,
+  });
+
+  final double minHeight;
+  final double maxHeight;
+  final Widget child;
+
+  @override
+  double get minExtent => minHeight;
+
+  @override
+  double get maxExtent => math.max(maxHeight, minHeight);
+
+  @override
+  Widget build(
+      BuildContext context, double shrinkOffset, bool overlapsContent) {
+    return SizedBox.expand(child: child);
+  }
+
+  @override
+  bool shouldRebuild(_SliverAppBarDelegate oldDelegate) {
+    return maxHeight != oldDelegate.maxHeight ||
+        minHeight != oldDelegate.minHeight ||
+        child != oldDelegate.child;
   }
 }

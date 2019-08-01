@@ -3,7 +3,7 @@ import 'dart:async';
 import 'dart:io';
 import 'package:flutter/services.dart';
 import '../feeds/index.dart';
-import '../trailing-center/TrailingCenter.dart';
+import '../follow/index.dart';
 import '../mine/Mine.dart';
 import '../utils/Webview.dart';
 
@@ -19,7 +19,7 @@ class _HomeState extends State<Home> {
   static final Icon iconPerson = Icon(Icons.person);
   final List<Widget> _tabbarViews = [
     Feeds(),
-    TrailingCenter(),
+    Follow(),
     createBaiduView(),
     Mine(),
   ];

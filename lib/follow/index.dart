@@ -19,10 +19,26 @@ class _FollowState extends State<Follow> {
     );
   }
 
+  Widget _appBar() {
+    var tabBar = _tabBar();
+    return AppBar(
+        title: ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: 150, maxHeight: 50),
+            child: tabBar),
+        backgroundColor: bgColor,
+        leading: IconButton(
+            onPressed: () {},
+            icon: Icon(Icons.camera_alt, color: Colors.grey)));
+  }
+
   Widget _onlines() {
     return Container(
       height: 132,
       padding: EdgeInsets.all(16),
+      decoration: BoxDecoration(
+          border: Border(
+              bottom: Divider.createBorderSide(context,
+                  color: Colors.white10))),
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         itemBuilder: (BuildContext context, int i) {
@@ -53,7 +69,7 @@ class _FollowState extends State<Follow> {
 
   Widget _feeds() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.all(16),
       child: ListView.builder(
         itemBuilder: (BuildContext context, int i) {
           return Container(
@@ -158,63 +174,38 @@ class _FollowState extends State<Follow> {
             ),
           );
         },
-        itemExtent: 672,
+        itemExtent: 656,
         itemCount: 5,
       ),
     );
   }
 
-  TabBarView _tabBarView() {
+  TabBarView _body() {
     var onlines = _onlines();
     var feeds = _feeds();
     return TabBarView(
-      children: <Widget>[
-        CustomScrollView(
-          slivers: <Widget>[
-            SliverFillRemaining(
-              child: Column(
-                children: <Widget>[
-                  onlines,
-                  Expanded(
-                    child: feeds,
-                  )
-                ],
-              ),
-            ),
-          ],
-        ),
-        CustomScrollView(
-          slivers: <Widget>[
-            SliverFillRemaining(
-              child: Column(
-                children: <Widget>[
-                  onlines,
-                  Expanded(
-                    child: feeds,
-                  )
-                ],
-              ),
-            ),
-          ],
-        ),
-      ],
+      children: List.generate(tabs.length, (_) {
+        return NestedScrollView(
+          headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
+            return <Widget>[
+              SliverToBoxAdapter(child: onlines),
+            ];
+          },
+          body: feeds,
+        );
+      }).toList(),
     );
   }
 
   Widget build(BuildContext context) {
-    var tabBar = _tabBar();
-    var tabBarView = _tabBarView();
+    var body = _body();
+    var appBar = _appBar();
     return DefaultTabController(
-      length: tabs.length,
-      child: Scaffold(
-        backgroundColor: bgColor,
-        appBar: AppBar(
+        length: tabs.length,
+        child: Scaffold(
           backgroundColor: bgColor,
-          primary: false,
-          bottom: tabBar,
-        ),
-        body: tabBarView,
-      ),
-    );
+          appBar: appBar,
+          body: body,
+        ));
   }
 }

@@ -42,7 +42,6 @@ class _MineState extends State<Mine> with SingleTickerProviderStateMixin {
 
   Widget baseView() {
     return Container(
-      color: bgColor,
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -64,7 +63,6 @@ class _MineState extends State<Mine> with SingleTickerProviderStateMixin {
                     padding: EdgeInsets.symmetric(horizontal: 8),
                     child: FlatButton(
                       color: Color(0xff3a3a43),
-                      textColor: Colors.white,
                       padding: EdgeInsets.symmetric(vertical: 14),
                       child: Text(
                         '编辑资料',
@@ -87,7 +85,6 @@ class _MineState extends State<Mine> with SingleTickerProviderStateMixin {
                   padding: EdgeInsets.all(1.5),
                   child: IconButton(
                     icon: Icon(Icons.group_add),
-                    color: Colors.white,
                     iconSize: 34,
                     onPressed: () {},
                   ),
@@ -106,12 +103,9 @@ class _MineState extends State<Mine> with SingleTickerProviderStateMixin {
               children: <Widget>[
                 Text(
                   '社会银儿',
-                  style: TextStyle(color: Colors.white, fontSize: 30),
+                  style: TextStyle(fontSize: 30),
                 ),
-                Text(
-                  '抖音号：dowdiandnei',
-                  style: TextStyle(color: Colors.white),
-                ),
+                Text('抖音号：dowdiandnei'),
               ],
             ),
           ),
@@ -119,7 +113,7 @@ class _MineState extends State<Mine> with SingleTickerProviderStateMixin {
             padding: EdgeInsets.symmetric(vertical: 10),
             child: Text(
               '🌈认真的男人最帅',
-              style: TextStyle(color: Colors.white, fontSize: 18),
+              style: TextStyle(fontSize: 18),
             ),
           ),
           Row(
@@ -166,9 +160,7 @@ class _MineState extends State<Mine> with SingleTickerProviderStateMixin {
               children: <Widget>[
                 RichText(
                     text: TextSpan(children: [
-                  TextSpan(
-                      text: '0',
-                      style: TextStyle(color: Colors.white, fontSize: 20)),
+                  TextSpan(text: '0', style: TextStyle(fontSize: 20)),
                   TextSpan(
                       text: '获赞',
                       style: TextStyle(color: Colors.grey, fontSize: 20)),
@@ -177,9 +169,7 @@ class _MineState extends State<Mine> with SingleTickerProviderStateMixin {
                   margin: EdgeInsets.symmetric(horizontal: 22),
                   child: RichText(
                       text: TextSpan(children: [
-                    TextSpan(
-                        text: '31',
-                        style: TextStyle(color: Colors.white, fontSize: 20)),
+                    TextSpan(text: '31', style: TextStyle(fontSize: 20)),
                     TextSpan(
                         text: '关注',
                         style: TextStyle(color: Colors.grey, fontSize: 20)),
@@ -187,9 +177,7 @@ class _MineState extends State<Mine> with SingleTickerProviderStateMixin {
                 ),
                 RichText(
                     text: TextSpan(children: [
-                  TextSpan(
-                      text: '0',
-                      style: TextStyle(color: Colors.white, fontSize: 20)),
+                  TextSpan(text: '0', style: TextStyle(fontSize: 20)),
                   TextSpan(
                       text: '粉丝',
                       style: TextStyle(color: Colors.grey, fontSize: 20)),
@@ -198,19 +186,14 @@ class _MineState extends State<Mine> with SingleTickerProviderStateMixin {
             ),
           ),
           FlatButton.icon(
-              color: Color(0xff232530),
-              onPressed: () {},
-              icon: Icon(
-                Icons.camera_alt,
-                color: Colors.white,
-              ),
-              label: Container(
-                padding: EdgeInsets.symmetric(vertical: 10),
-                child: Text(
-                  '添加随拍',
-                  style: TextStyle(color: Colors.white),
-                ),
-              ))
+            color: Color(0xff232530),
+            onPressed: () {},
+            icon: Icon(Icons.camera_alt),
+            label: Container(
+              padding: EdgeInsets.symmetric(vertical: 10),
+              child: Text('添加随拍'),
+            ),
+          )
         ],
       ),
     );
@@ -273,27 +256,30 @@ class _MineState extends State<Mine> with SingleTickerProviderStateMixin {
     var _tabBarView = tabBarView();
     return DefaultTabController(
       length: myTabs.length,
-      child: NestedScrollView(
-        headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
-          // These are the slivers that show up in the "outer" scroll view.
-          return <Widget>[
-            SliverAppBar(
-              backgroundColor: bgColor,
-              primary: false,
-              automaticallyImplyLeading: false,
-              expandedHeight: 100,
-              flexibleSpace: FlexibleSpaceBar(
-                background: Image.asset(
-                  'assets/avatar.png',
-                  fit: BoxFit.cover,
+      child: Scaffold(
+        backgroundColor: bgColor,
+        body: NestedScrollView(
+          headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
+            // These are the slivers that show up in the "outer" scroll view.
+            return <Widget>[
+              SliverAppBar(
+                backgroundColor: bgColor,
+                primary: false,
+                automaticallyImplyLeading: false,
+                expandedHeight: 100,
+                flexibleSpace: FlexibleSpaceBar(
+                  background: Image.asset(
+                    'assets/avatar.png',
+                    fit: BoxFit.cover,
+                  ),
                 ),
               ),
-            ),
-            SliverToBoxAdapter(
-              child: _baseView,
-            ),
-            SliverOverlapAbsorber(
-              handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),
+              SliverToBoxAdapter(
+                child: _baseView,
+              ),
+              SliverOverlapAbsorber(
+                handle:
+                    NestedScrollView.sliverOverlapAbsorberHandleFor(context),
 //              child: SliverAppBar(
 //                automaticallyImplyLeading: false,
 ////                title: const Text('Books'),
@@ -302,20 +288,18 @@ class _MineState extends State<Mine> with SingleTickerProviderStateMixin {
 //                forceElevated: innerBoxIsScrolled,
 //                bottom: tabBar(),
 //              ),
-              child: SliverPersistentHeader(
-                pinned: true,
-                delegate: _SliverAppBarDelegate(
-                  minHeight: 60.0,
-                  maxHeight: 60.0,
-                  child: _tabBar,
+                child: SliverPersistentHeader(
+                  pinned: true,
+                  delegate: _SliverAppBarDelegate(
+                    minHeight: 60.0,
+                    maxHeight: 60.0,
+                    child: _tabBar,
+                  ),
                 ),
               ),
-            ),
-          ];
-        },
-        body: Container(
-          color: bgColor,
-          child: _tabBarView,
+            ];
+          },
+          body: _tabBarView,
         ),
       ),
     );

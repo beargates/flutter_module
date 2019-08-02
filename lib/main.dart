@@ -9,7 +9,8 @@ class App extends StatelessWidget {
     return new MaterialApp(
       title: 'Flutter_demo',
       theme: new ThemeData(
-        primaryColor: Colors.black,
+        brightness: Brightness.dark, // 状态栏图标与字体颜色为白色
+        primaryColor: Colors.black, // 顶部导航栏和状态栏的颜色
       ),
       home: Home(),
 //      routes: {

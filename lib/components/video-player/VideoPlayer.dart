@@ -5,8 +5,9 @@ class VideoView extends StatefulWidget {
   final videoUrl;
   final coverUrl;
   final holder; // load时的占位，如loading/封面图
+  final bool releaseResource;
 
-  VideoView({this.videoUrl, this.coverUrl, this.holder});
+  VideoView({this.videoUrl, this.coverUrl, this.holder, this.releaseResource});
 
   @override
   _VideoViewState createState() => _VideoViewState();
@@ -18,14 +19,22 @@ class _VideoViewState extends State<VideoView> {
 
   @override
   void initState() {
-    super.initState();
     _controller = VideoPlayerController.network(widget.videoUrl)
       ..initialize().then((_) {
-        // Ensure the first frame is shown after the video is initialized, even before the play button has been pressed.
+        // Ensure the first frame is shown after the video is initialized,
+        // even before the play button has been pressed.
         _controller.play();
         // 使用play().then会有短暂白屏
         _controller.addListener(_onVideoControllerUpdate);
       });
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _controller.removeListener(_onVideoControllerUpdate);
+    _controller.dispose();
+    super.dispose();
   }
 
   void _onVideoControllerUpdate() {
@@ -34,21 +43,24 @@ class _VideoViewState extends State<VideoView> {
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return _controller.value.initialized
-        ? AspectRatio(
-            aspectRatio: _controller.value.aspectRatio,
-            child: VideoPlayer(_controller),
-          )
-//        ? Text('123')
-        : widget.holder;
+  Widget content() {
+    if (widget.releaseResource) {
+      return widget.holder;
+    } else if (_controller.value.initialized) {
+      return VideoPlayer(_controller);
+    }
+    return widget.holder;
   }
 
   @override
-  void dispose() {
-    super.dispose();
-    _controller.removeListener(_onVideoControllerUpdate);
-    _controller.dispose();
+  Widget build(BuildContext context) {
+//    return AspectRatio(
+//      aspectRatio: _controller.value.aspectRatio,
+//      child: content(),
+//    );
+    return ConstrainedBox(
+      constraints: BoxConstraints.expand(),
+      child: content(),
+    );
   }
 }

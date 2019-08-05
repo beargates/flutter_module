@@ -49,7 +49,7 @@ class _HomeState extends State<Home> {
       body: _tabbarViews.elementAt(_selectedIndex),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
-        backgroundColor: Colors.black,
+        backgroundColor: Color(0xff1B1C20),
         currentIndex: _selectedIndex,
         fixedColor: Colors.white,
         unselectedItemColor: Colors.grey,

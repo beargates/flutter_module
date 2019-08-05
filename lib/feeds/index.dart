@@ -67,8 +67,8 @@ class _FeedsState extends State<Feeds> {
   }
 
   Future reload() async {
-    list = await ImagePathEntity.all.imageList;
-    list.shuffle();
+//    list = await ImagePathEntity.all.imageList;
+//    list.shuffle();
     videoList.shuffle();
     setState(() {});
   }
@@ -142,18 +142,21 @@ class _ItemState extends State<Item> {
   Widget right() {
     return Container(
       alignment: Alignment.bottomRight,
+      padding: EdgeInsets.all(16),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.end,
         children: <Widget>[
           Column(
             children: <Widget>[
-              IconButton(icon: Icon(Icons.favorite), onPressed: () {}),
+              IconButton(
+                  icon: Icon(Icons.favorite, size: 40), onPressed: () {}),
               Text('2.5w')
             ],
           ),
           Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
-              IconButton(icon: Icon(Icons.message), onPressed: () {}),
+              IconButton(icon: Icon(Icons.message, size: 40), onPressed: () {}),
               Text('1019')
             ],
           )
@@ -163,36 +166,23 @@ class _ItemState extends State<Item> {
   }
 
   Widget bottom() {
-    return Container(
-      alignment: Alignment.bottomLeft,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: <Widget>[
-          Column(
-            children: <Widget>[
-              IconButton(icon: Icon(Icons.favorite), onPressed: () {}),
-              Text('2.5w')
-            ],
-          ),
-          Column(
-            children: <Widget>[
-              IconButton(icon: Icon(Icons.message), onPressed: () {}),
-              Text('1019')
-            ],
-          )
-        ],
-      ),
-    );
+    return Container();
   }
 
   Widget _buildVideo() {
 //    return Container();
-    var holder = Image.network(widget.coverUrl);
-    return VideoView(
-      videoUrl: widget.videoUrl,
-      coverUrl: widget.coverUrl,
-      holder: holder,
-      releaseResource: !widget.isCurrent,
+//    var holder = ConstrainedBox(
+//        constraints: BoxConstraints.expand(),
+//        child: Image.network(widget.coverUrl));
+    var holder = Image.network(widget.coverUrl, fit: BoxFit.contain);
+
+    return Center(
+      child: VideoView(
+        videoUrl: widget.videoUrl,
+        coverUrl: widget.coverUrl,
+        holder: holder,
+        releaseResource: !widget.isCurrent,
+      ),
     );
   }
 

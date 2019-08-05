@@ -43,24 +43,16 @@ class _VideoViewState extends State<VideoView> {
     }
   }
 
-  Widget content() {
+  @override
+  Widget build(BuildContext context) {
     if (widget.releaseResource) {
       return widget.holder;
     } else if (_controller.value.initialized) {
-      return VideoPlayer(_controller);
+      return AspectRatio(
+        aspectRatio: _controller.value.aspectRatio,
+        child: VideoPlayer(_controller),
+      );
     }
     return widget.holder;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-//    return AspectRatio(
-//      aspectRatio: _controller.value.aspectRatio,
-//      child: content(),
-//    );
-    return ConstrainedBox(
-      constraints: BoxConstraints.expand(),
-      child: content(),
-    );
   }
 }

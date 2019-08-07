@@ -85,14 +85,25 @@ class _FeedsState extends State<Feeds> {
               icon: Icon(Icons.camera_alt),
               label: Text('随拍')),
           // todo tabBar
+          ConstrainedBox(
+              constraints: BoxConstraints.tight(Size(100, 50)),
+              child: Row(children: <Widget>[
+                Expanded(
+                    child: FlatButton(
+                        child: Text('推荐', style: TextStyle(fontSize: 18)),
+                        onPressed: () {},
+                        padding: EdgeInsets.zero)),
+                Expanded(
+                    child: FlatButton(
+                        child: Text('北京', style: TextStyle(fontSize: 18)),
+                        onPressed: () {},
+                        padding: EdgeInsets.zero))
+              ])),
           Container(
-            child: Row(
-              children: <Widget>[
-                IconButton(icon: Icon(Icons.live_tv), onPressed: () {}),
-                IconButton(icon: Icon(Icons.search), onPressed: () {})
-              ],
-            ),
-          )
+              child: Row(children: <Widget>[
+            IconButton(icon: Icon(Icons.live_tv), onPressed: () {}),
+            IconButton(icon: Icon(Icons.search), onPressed: () {})
+          ]))
         ],
       ),
     );
@@ -149,14 +160,14 @@ class _ItemState extends State<Item> {
           Column(
             children: <Widget>[
               IconButton(
-                  icon: Icon(Icons.favorite, size: 40), onPressed: () {}),
+                  icon: Icon(Icons.favorite, size: 32), onPressed: () {}),
               Text('2.5w')
             ],
           ),
           Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
-              IconButton(icon: Icon(Icons.message, size: 40), onPressed: () {}),
+              IconButton(icon: Icon(Icons.message, size: 32), onPressed: () {}),
               Text('1019')
             ],
           )

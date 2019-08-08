@@ -1,0 +1,11 @@
+FRAMEWORK_SEARCH_PATHS = $(inherited) "${PODS_ROOT}/../Flutter/engine"
+GCC_PREPROCESSOR_DEFINITIONS = $(inherited) COCOAPODS=1
+HEADER_SEARCH_PATHS = $(inherited) "${PODS_ROOT}/Headers/Public" "${PODS_ROOT}/Headers/Public/FlutterPluginRegistrant" "${PODS_ROOT}/Headers/Public/HappyDNS" "${PODS_ROOT}/Headers/Public/Qiniu" "${PODS_ROOT}/Headers/Public/camera" "${PODS_ROOT}/Headers/Public/flutter_webview_plugin" "${PODS_ROOT}/Headers/Public/image_picker" "${PODS_ROOT}/Headers/Public/photo_manager" "${PODS_ROOT}/Headers/Public/sy_flutter_qiniu_storage" "${PODS_ROOT}/Headers/Public/video_player"
+LD_RUNPATH_SEARCH_PATHS = $(inherited) '@executable_path/Frameworks' '@loader_path/Frameworks'
+LIBRARY_SEARCH_PATHS = $(inherited) "${PODS_CONFIGURATION_BUILD_DIR}/FlutterPluginRegistrant" "${PODS_CONFIGURATION_BUILD_DIR}/HappyDNS" "${PODS_CONFIGURATION_BUILD_DIR}/Qiniu" "${PODS_CONFIGURATION_BUILD_DIR}/camera" "${PODS_CONFIGURATION_BUILD_DIR}/flutter_webview_plugin" "${PODS_CONFIGURATION_BUILD_DIR}/image_picker" "${PODS_CONFIGURATION_BUILD_DIR}/photo_manager" "${PODS_CONFIGURATION_BUILD_DIR}/sy_flutter_qiniu_storage" "${PODS_CONFIGURATION_BUILD_DIR}/video_player"
+OTHER_LDFLAGS = $(inherited) -ObjC -l"FlutterPluginRegistrant" -l"HappyDNS" -l"Qiniu" -l"camera" -l"flutter_webview_plugin" -l"image_picker" -l"photo_manager" -l"resolv" -l"sy_flutter_qiniu_storage" -l"video_player" -l"z" -framework "Flutter"
+PODS_BUILD_DIR = ${BUILD_DIR}
+PODS_CONFIGURATION_BUILD_DIR = ${PODS_BUILD_DIR}/$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)
+PODS_PODFILE_DIR_PATH = ${SRCROOT}/.
+PODS_ROOT = ${SRCROOT}/Pods
+#include "/Users/duzefeng/app/hybrid/flutter/flutter_module/.ios/Flutter/Generated.xcconfig"

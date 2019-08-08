@@ -38,7 +38,7 @@ dependencies:
   dio: ^2.1.13
   sy_flutter_qiniu_storage: 0.1.4
   toast: ^0.1.5
-  photo: ^0.0.8
+  photo: ^0.3.4
   uuid: 2.0.1
 
 dev_dependencies:
@@ -100,5 +100,5 @@ flutter:
   # identifiers, which may be completely independent or the same as these.
   module:
     androidX: false
-    androidPackage: com.example.flutter_module
-    iosBundleIdentifier: com.example.flutterModule
+    androidPackage: cn.beargates.polar
+    iosBundleIdentifier: cn.beargates.polar

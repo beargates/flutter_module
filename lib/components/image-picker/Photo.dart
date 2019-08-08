@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:photo/photo.dart';
 import 'package:photo_manager/photo_manager.dart';
 
-Future<List<ImageEntity>> pickAsset(context) async {
-  return PhotoPicker.pickImage(
+Future<List<AssetEntity>> pickAsset(context) async {
+  return PhotoPicker.pickAsset(
     context: context,
     // BuildContext requied
 
@@ -40,14 +40,14 @@ Future<List<ImageEntity>> pickAsset(context) async {
 //    loadingDelegate: this,
     // if you want to build custom loading widget,extends LoadingDelegate [see example/lib/main.dart]
 
-//    badgeDelegate: const DefaultBadgeDelegate(),
+    badgeDelegate: const DefaultBadgeDelegate(),
 
     // or custom class extends [BadgeDelegate]
 
 //    pickType: type,
     // all/image/video
 
-//    List < AssetPathEntity > photoPathList,
+//    List<AssetPathEntity> photoPathList,
 
     // when [photoPathList] is not null , [pickType] invalid .
   );

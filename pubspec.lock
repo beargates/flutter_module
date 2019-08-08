@@ -56,7 +56,7 @@ packages:
       name: crypto
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "2.0.6"
+    version: "2.1.1+1"
   cupertino_icons:
     dependency: "direct main"
     description:
@@ -136,14 +136,14 @@ packages:
       name: photo
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "0.0.8"
+    version: "0.3.4+1"
   photo_manager:
     dependency: transitive
     description:
       name: photo_manager
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "0.0.3"
+    version: "0.3.4"
   quiver:
     dependency: transitive
     description:

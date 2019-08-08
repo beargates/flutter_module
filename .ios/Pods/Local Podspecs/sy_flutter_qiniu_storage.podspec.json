@@ -1,0 +1,29 @@
+{
+  "name": "sy_flutter_qiniu_storage",
+  "version": "0.0.1",
+  "summary": "七牛云对象存储SDK",
+  "description": "七牛云对象存储SDK",
+  "homepage": "http://example.com",
+  "license": {
+    "file": "../LICENSE"
+  },
+  "authors": {
+    "Your Company": "email@example.com"
+  },
+  "source": {
+    "path": "."
+  },
+  "source_files": "Classes/**/*",
+  "public_header_files": "Classes/**/*.h",
+  "dependencies": {
+    "Flutter": [
+
+    ],
+    "Qiniu": [
+
+    ]
+  },
+  "platforms": {
+    "ios": "8.0"
+  }
+}

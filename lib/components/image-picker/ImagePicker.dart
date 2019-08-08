@@ -50,19 +50,19 @@ class _MyHomePageState extends State<MyHomePage> {
       });
     } else {
       try {
-//        List list = await pickAsset(context);
+        List list = await pickAsset(context);
 //        print(list);
-        _imageFile = await ImagePicker.pickImage(source: source);
-        if (_imageFile != null) {
-          print(_imageFile.path);
-          QiniuUploader.upload(file: _imageFile).then((data) {
-            String msg = '上传失败';
-            if (data['code'] == 0) {
-              msg = '上传成功：' + data['url'];
-            }
-            Toast.show(msg, context, duration: 3);
-          });
-        }
+//        _imageFile = await ImagePicker.pickImage(source: source);
+//        if (_imageFile != null) {
+//          print(_imageFile.path);
+//          QiniuUploader.upload(file: _imageFile).then((data) {
+//            String msg = '上传失败';
+//            if (data['code'] == 0) {
+//              msg = '上传成功：' + data['url'];
+//            }
+//            Toast.show(msg, context, duration: 3);
+//          });
+//        }
       } catch (e) {
         _pickImageError = e;
       }

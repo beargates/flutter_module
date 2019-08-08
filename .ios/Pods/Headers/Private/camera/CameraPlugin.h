@@ -1,0 +1,1 @@
+../../../../Flutter/.symlinks/camera/ios/Classes/CameraPlugin.h

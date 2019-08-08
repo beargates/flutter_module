@@ -18,7 +18,7 @@ class _FeedsState extends State<Feeds> {
   final double statusBarHeight = MediaQueryData.fromWindow(window).padding.top;
   final double bottomTabBarHeight =
       MediaQueryData.fromWindow(window).padding.bottom;
-  List<ImageEntity> list;
+  List<AssetEntity> list;
   List<String> videoList = [
     'https://asset.txqn.huohua.cn/video/0f2a0ebb-c2c6-495d-925f-4a8b97671a36.mp4',
     'https://asset.txqn.huohua.cn/video/79663ecf-e10c-4452-9496-9eb8051b9af5.mp4',
@@ -47,8 +47,8 @@ class _FeedsState extends State<Feeds> {
   void init() async {
     var result = await PhotoManager.requestPermission();
     if (result) {
-      List<ImagePathEntity> list1 = await PhotoManager.getImagePathList();
-      list = await list1.elementAt(1)?.imageList;
+      List<AssetPathEntity> list1 = await PhotoManager.getAssetPathList();
+      list = await list1.elementAt(1)?.assetList;
       print(list1);
 //      list = await ImagePathEntity.all.imageList;
       setState(() {});

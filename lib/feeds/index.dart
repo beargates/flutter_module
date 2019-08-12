@@ -115,25 +115,28 @@ class _FeedsState extends State<Feeds> {
       return Container();
     }
 
-    return RefreshIndicator(
-      onRefresh: reload,
-      child: Stack(
-        children: <Widget>[
-          PageView.builder(
-            key: PageStorageKey('feeds'),
-            controller: _controller,
-            scrollDirection: Axis.vertical,
-            itemBuilder: (BuildContext context, int i) {
-              return Item(
-                  videoUrl: videoList.elementAt(i),
-                  coverUrl: videoList.elementAt(i) + thumbQuery,
-                  isCurrent: current == i);
-            },
-            itemCount: videoList.length,
-            onPageChanged: onPageChanged,
-          ),
-          top()
-        ],
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: RefreshIndicator(
+        onRefresh: reload,
+        child: Stack(
+          children: <Widget>[
+            PageView.builder(
+              key: PageStorageKey('feeds'),
+              controller: _controller,
+              scrollDirection: Axis.vertical,
+              itemBuilder: (BuildContext context, int i) {
+                return Item(
+                    videoUrl: videoList.elementAt(i),
+                    coverUrl: videoList.elementAt(i) + thumbQuery,
+                    isCurrent: current == i);
+              },
+              itemCount: videoList.length,
+              onPageChanged: onPageChanged,
+            ),
+            top()
+          ],
+        ),
       ),
     );
   }
@@ -199,11 +202,8 @@ class _ItemState extends State<Item> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.black,
-      body: Stack(
-        children: <Widget>[_buildVideo(), right(), bottom()],
-      ),
+    return Stack(
+      children: <Widget>[_buildVideo(), right(), bottom()],
     );
   }
 }

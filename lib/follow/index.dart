@@ -31,6 +31,38 @@ class _FollowState extends State<Follow> {
             icon: Icon(Icons.camera_alt, color: Colors.grey)));
   }
 
+  Widget build(BuildContext context) {
+    var appBar = _appBar();
+    return DefaultTabController(
+        length: tabs.length,
+        child: Scaffold(
+          backgroundColor: bgColor,
+          appBar: appBar,
+          body: TabBarView(
+            children: List.generate(tabs.length, (_) {
+              return TabContent();
+            }).toList(),
+          ),
+        ));
+  }
+}
+
+///
+/// resolve issue: 不能保存tabBarView的滚动状态
+/// 方法一：利用 AutomaticKeepAliveClientMixin
+///     refer: https://juejin.im/post/5b73c3b3f265da27d701473a
+/// 方法二(仅适用于3个及以下的tab)：添加PageController(viewportFraction: 0.9999)
+///     refer： https://www.jianshu.com/p/ee149d204e30
+///
+class TabContent extends StatefulWidget {
+  _TabContentState createState() => _TabContentState();
+}
+
+class _TabContentState extends State<TabContent>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
   Widget _onlines() {
     return Container(
       height: 132,
@@ -178,32 +210,17 @@ class _FollowState extends State<Follow> {
     );
   }
 
-  TabBarView _body() {
+  @override
+  Widget build(BuildContext context) {
     var onlines = _onlines();
     var feeds = _feeds();
-    return TabBarView(
-      children: List.generate(tabs.length, (_) {
-        return NestedScrollView(
-          headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
-            return <Widget>[
-              SliverToBoxAdapter(child: onlines),
-            ];
-          },
-          body: feeds,
-        );
-      }).toList(),
+    return NestedScrollView(
+      headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
+        return <Widget>[
+          SliverToBoxAdapter(child: onlines),
+        ];
+      },
+      body: feeds,
     );
-  }
-
-  Widget build(BuildContext context) {
-    var body = _body();
-    var appBar = _appBar();
-    return DefaultTabController(
-        length: tabs.length,
-        child: Scaffold(
-          backgroundColor: bgColor,
-          appBar: appBar,
-          body: body,
-        ));
   }
 }

@@ -23,19 +23,50 @@ class _MineState extends State<Mine> with SingleTickerProviderStateMixin {
     'https://asset.txqn.huohua.cn/video/5c9869bc-22e7-49b8-b259-43b8e2d85c5d.mp4',
     'https://asset.txqn.huohua.cn/video/c5c233a5-1d70-4cb4-89f0-02fe90a78c6c.mp4',
   ];
+  List _list;
   String thumbQuery = '?vframe/jpg/offset/0';
+  double _opacity = 0;
 
-//  @override
-//  void initState() {
-//    super.initState();
-//    _controller.addListener(() {
-//      print(_controller.offset);
-//    });
-//  }
+  @override
+  void initState() {
+    super.initState();
+    _list = List.generate(40, (int i) {
+      return Image.network(
+        videoList.elementAt(math.Random().nextInt(4)) + thumbQuery,
+        fit: BoxFit.cover,
+        height: 200,
+      );
+    }).toList();
+
+    /// 监听滚动，实现伪AppBar的渐隐渐现
+    ///
+    /// AppBar渐隐渐现的实现思路：
+    /// 首先有个透明SliverAppBar占位
+    /// 其次监听滚动实现自定义的AppBar
+    ///
+    _controller.addListener(() {
+      double opacity = 0;
+      if (_controller.offset > 200 && _controller.offset < 360) {
+        opacity = (_controller.offset - 200) / 160;
+      } else if (_controller.offset > 360) {
+        opacity = 1;
+      } else {
+        opacity = 0;
+      }
+      opacity = math.max(math.min(opacity, 1), 0);
+      if (opacity != _opacity) {
+        setState(() {
+          _opacity = opacity;
+        });
+      } else {
+        print('no render');
+      }
+    });
+  }
 
   @override
   void dispose() {
-    _controller.dispose();
+    _controller?.dispose();
     super.dispose();
   }
 
@@ -225,14 +256,7 @@ class _MineState extends State<Mine> with SingleTickerProviderStateMixin {
                   SliverGrid.count(
                     mainAxisSpacing: 2,
                     crossAxisSpacing: 2,
-                    children: List.generate(40, (int i) {
-                      return Image.network(
-                        videoList.elementAt(math.Random().nextInt(4)) +
-                            thumbQuery,
-                        fit: BoxFit.cover,
-                        height: 200,
-                      );
-                    }).toList(),
+                    children: _list,
                     crossAxisCount: 3,
                   ),
                 ],
@@ -253,49 +277,65 @@ class _MineState extends State<Mine> with SingleTickerProviderStateMixin {
       length: myTabs.length,
       child: Scaffold(
         backgroundColor: bgColor,
-        body: NestedScrollView(
-          headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
-            // These are the slivers that show up in the "outer" scroll view.
-            return <Widget>[
-              SliverAppBar(
-                backgroundColor: bgColor,
-                primary: false,
-                automaticallyImplyLeading: false,
-                expandedHeight: 100,
-                flexibleSpace: FlexibleSpaceBar(
-                  background: Image.asset(
-                    'assets/avatar.png',
-                    fit: BoxFit.cover,
-                  ),
-                ),
-              ),
-              SliverToBoxAdapter(
-                child: _baseView,
-              ),
-              SliverOverlapAbsorber(
-                handle:
-                    NestedScrollView.sliverOverlapAbsorberHandleFor(context),
-//              child: SliverAppBar(
-//                automaticallyImplyLeading: false,
-////                title: const Text('Books'),
-//                pinned: true,
-//                expandedHeight: 0.0,
-//                forceElevated: innerBoxIsScrolled,
-//                bottom: tabBar(),
-//              ),
-                child: SliverPersistentHeader(
+        body: Stack(children: <Widget>[
+          NestedScrollView(
+            controller: _controller,
+            headerSliverBuilder:
+                (BuildContext context, bool innerBoxIsScrolled) {
+              // These are the slivers that show up in the "outer" scroll view.
+              return <Widget>[
+                /// 占位AppBar
+                SliverAppBar(
+                  title: Text(''),
+                  elevation: 0, /// 去掉AppBar下面的阴影
                   pinned: true,
-                  delegate: _SliverAppBarDelegate(
-                    minHeight: 60.0,
-                    maxHeight: 60.0,
-                    child: _tabBar,
+                  backgroundColor: Colors.transparent,
+                  automaticallyImplyLeading: false,
+                  expandedHeight: 100,
+                  flexibleSpace: FlexibleSpaceBar(
+                    background: Image.asset(
+                      'assets/avatar.png',
+                      fit: BoxFit.cover,
+                    ),
                   ),
                 ),
-              ),
-            ];
-          },
-          body: _tabBarView,
-        ),
+                SliverToBoxAdapter(
+                  child: _baseView,
+                ),
+                SliverOverlapAbsorber(
+                  handle:
+                      NestedScrollView.sliverOverlapAbsorberHandleFor(context),
+                  child: SliverPersistentHeader(
+                    pinned: true,
+                    delegate: _SliverAppBarDelegate(
+                      minHeight: 60.0,
+                      maxHeight: 60.0,
+                      child: _tabBar,
+                    ),
+                  ),
+                ),
+              ];
+            },
+            body: _tabBarView,
+          ),
+          Opacity(
+              opacity: _opacity,
+//              opacity: 1,
+              child: Container(
+                  color: bgColor,
+                  padding: EdgeInsets.only(top: 50),
+                  height: 100,
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      Text(
+                        '社会银儿',
+                        style: TextStyle(fontSize: 25),
+                      )
+                    ],
+                  )))
+        ]),
       ),
     );
   }
@@ -319,15 +359,15 @@ class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
   double get maxExtent => math.max(maxHeight, minHeight);
 
   @override
-  Widget build(
-      BuildContext context, double shrinkOffset, bool overlapsContent) {
-    return SizedBox.expand(child: child);
-  }
-
-  @override
   bool shouldRebuild(_SliverAppBarDelegate oldDelegate) {
     return maxHeight != oldDelegate.maxHeight ||
         minHeight != oldDelegate.minHeight ||
         child != oldDelegate.child;
+  }
+
+  @override
+  Widget build(
+      BuildContext context, double shrinkOffset, bool overlapsContent) {
+    return SizedBox.expand(child: child);
   }
 }

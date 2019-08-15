@@ -1,12 +1,9 @@
-import 'dart:typed_data';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
 
 import 'package:photo_manager/photo_manager.dart';
 
-import '../utils/navigation.dart';
-import '../components/image-picker/image_picker.dart';
 import '../components/video-player/video_player.dart';
 
 class Feeds extends StatefulWidget {
@@ -55,10 +52,6 @@ class _FeedsState extends State<Feeds> {
     } else {
       PhotoManager.openSetting();
     }
-  }
-
-  void toCamera() {
-    NavigationUtil.navigate(context, MyHomePage(), withAppBar: false);
   }
 
   void onPageChanged(int index) {

@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
+
 import 'home/index.dart';
+import 'components/image-picker/image_picker.dart';
 
 void main() => runApp(new App());
 
 class App extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return new MaterialApp(
+    return MaterialApp(
       title: 'Flutter_demo',
-      theme: new ThemeData(
+      theme: ThemeData(
         // 状态栏图标与字体颜色为白色
         brightness: Brightness.dark,
         // 顶部导航栏和状态栏的颜色
@@ -21,9 +23,9 @@ class App extends StatelessWidget {
         scaffoldBackgroundColor: Colors.black,
       ),
       home: Home(),
-//      routes: {
-//        "/webview": (_) => LoadWebView('https://baidu.com'),
-//      },
+      routes: {
+        "/test": (_) => MyHomePage(),
+      },
     );
   }
 }

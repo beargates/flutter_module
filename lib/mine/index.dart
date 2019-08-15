@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'dart:math' as math;
 
 //import '../components/camera/camera.dart';
-import '../components/image-picker/image_picker.dart';
 
 class Mine extends StatefulWidget {
   @override
@@ -51,13 +50,15 @@ class _MineState extends State<Mine> with SingleTickerProviderStateMixin {
             offset: Offset(0, -10),
             child: Row(
               children: <Widget>[
-                Container(
-                  width: 100,
-                  height: 100,
-                  child: CircleAvatar(
-                    backgroundImage: AssetImage('assets/avatar.png'),
-                  ),
-                ),
+                GestureDetector(
+                    onTap: () {},
+                    child: Container(
+                      width: 100,
+                      height: 100,
+                      child: CircleAvatar(
+                        backgroundImage: AssetImage('assets/avatar.png'),
+                      ),
+                    )),
                 Expanded(
                   child: Padding(
                     padding: EdgeInsets.symmetric(horizontal: 8),
@@ -69,13 +70,7 @@ class _MineState extends State<Mine> with SingleTickerProviderStateMixin {
                         style: TextStyle(fontSize: 18),
                       ),
                       onPressed: () {
-                        Navigator.of(context).push(
-                          new MaterialPageRoute(
-                            builder: (context) {
-                              return MyHomePage();
-                            },
-                          ),
-                        );
+                        Navigator.of(context).pushNamed('/test');
                       },
                     ),
                   ),

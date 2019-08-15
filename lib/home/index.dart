@@ -15,9 +15,13 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   int _selectedIndex = 0;
-  static final Icon iconNote = Icon(Icons.event_note);
-  static final Icon iconSchool = Icon(Icons.school);
-  static final Icon iconPerson = Icon(Icons.person);
+  static final List<Map<String, dynamic>> _bottomNavBarItems = [
+    {"icon": Icons.list, "title": '首页'},
+    {"icon": Icons.favorite, "title": '关注'},
+    {"icon": Icons.message, "title": '消息'},
+    {"icon": Icons.person, "title": '我'},
+  ];
+
   static final _feeds = Feeds();
   static final _fllow = Follow();
   static final _webview = createBaiduView();
@@ -67,13 +71,23 @@ class _HomeState extends State<Home> {
         fixedColor: Colors.white,
         unselectedItemColor: Colors.grey,
         onTap: _onItemTapped,
-        items: [
-          BottomNavigationBarItem(icon: Icon(Icons.list), title: Text('首页')),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.favorite), title: Text('关注')),
-          BottomNavigationBarItem(icon: Icon(Icons.message), title: Text('消息')),
-          BottomNavigationBarItem(icon: Icon(Icons.person), title: Text('我')),
-        ],
+        items: _bottomNavBarItems.map((_) {
+          var current = _bottomNavBarItems.indexOf(_) == _selectedIndex;
+          return BottomNavigationBarItem(
+              icon: Icon(_['icon'], size: 0), /// 去掉icon
+              title: Container(
+                padding: EdgeInsets.only(bottom: 8),
+                decoration: current
+                    ? BoxDecoration(
+                        border: Border(
+                            bottom: BorderSide(color: Colors.white, width: 3)))
+                    : null,
+                child: Text(
+                  _['title'],
+                  style: TextStyle(fontSize: 20),
+                ),
+              ));
+        }).toList(),
       ),
     );
   }

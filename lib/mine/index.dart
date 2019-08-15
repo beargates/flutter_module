@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
 
-//import '../components/camera/Camera.dart';
-import '../components/image-picker/ImagePicker.dart';
+//import '../components/camera/camera.dart';
+import '../components/image-picker/image_picker.dart';
 
 class Mine extends StatefulWidget {
   @override

@@ -5,9 +5,9 @@ import 'package:flutter/material.dart';
 
 import 'package:photo_manager/photo_manager.dart';
 
-import '../utils/Navigation.dart';
-import '../components/image-picker/ImagePicker.dart';
-import '../components/video-player/VideoPlayer.dart';
+import '../utils/navigation.dart';
+import '../components/image-picker/image_picker.dart';
+import '../components/video-player/video_player.dart';
 
 class Feeds extends StatefulWidget {
   _FeedsState createState() => _FeedsState();

@@ -212,6 +212,7 @@ class _TabContentState extends State<TabContent>
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     var onlines = _onlines();
     var feeds = _feeds();
     return NestedScrollView(

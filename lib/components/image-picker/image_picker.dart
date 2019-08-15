@@ -6,8 +6,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:video_player/video_player.dart';
 
 //import '../../utils/request.dart';
-import '../qiniu-uploader/QiniuUploader.dart';
-import './Photo.dart';
+import '../qiniu-uploader/qiniu_uploader.dart';
+import './photo.dart';
 
 import 'package:toast/toast.dart';
 

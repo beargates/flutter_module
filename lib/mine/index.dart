@@ -101,7 +101,7 @@ class _MineState extends State<Mine> with SingleTickerProviderStateMixin {
                         style: TextStyle(fontSize: 18),
                       ),
                       onPressed: () {
-                        Navigator.of(context).pushNamed('/test');
+                        Navigator.of(context).pushNamed('/base_info');
                       },
                     ),
                   ),
@@ -137,10 +137,7 @@ class _MineState extends State<Mine> with SingleTickerProviderStateMixin {
           ),
           Container(
             padding: EdgeInsets.symmetric(vertical: 10),
-            child: Text(
-              '🌈认真的男人最帅',
-              style: TextStyle(fontSize: 18),
-            ),
+            child: Text('🌈认真的男人最帅', style: TextStyle(fontSize: 18)),
           ),
           Row(
 //            mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -153,29 +150,23 @@ class _MineState extends State<Mine> with SingleTickerProviderStateMixin {
                     Icons.person,
                     color: Colors.blue,
                   ),
-                  label: Text(
-                    '26岁',
-                    style: TextStyle(color: Colors.grey, fontSize: 16),
-                  )),
+                  label: Text('26岁',
+                      style: TextStyle(color: Colors.grey, fontSize: 16))),
               Container(
                 margin: EdgeInsets.symmetric(horizontal: 5),
                 child: FlatButton(
                   padding: EdgeInsets.zero,
                   color: Color(0xff232530),
-                  child: Text(
-                    '北京·顺义',
-                    style: TextStyle(color: Colors.grey, fontSize: 16),
-                  ),
+                  child: Text('北京·顺义',
+                      style: TextStyle(color: Colors.grey, fontSize: 16)),
                   onPressed: () {},
                 ),
               ),
               FlatButton(
                 padding: EdgeInsets.zero,
                 color: Color(0xff232530),
-                child: Text(
-                  '哈尔滨商业大学',
-                  style: TextStyle(color: Colors.grey, fontSize: 16),
-                ),
+                child: Text('哈尔滨商业大学',
+                    style: TextStyle(color: Colors.grey, fontSize: 16)),
                 onPressed: () {},
               ),
             ],
@@ -287,7 +278,9 @@ class _MineState extends State<Mine> with SingleTickerProviderStateMixin {
                 /// 占位AppBar
                 SliverAppBar(
                   title: Text(''),
-                  elevation: 0, /// 去掉AppBar下面的阴影
+                  elevation: 0,
+
+                  /// 去掉AppBar下面的阴影
                   pinned: true,
                   backgroundColor: Colors.transparent,
                   automaticallyImplyLeading: false,
@@ -308,8 +301,8 @@ class _MineState extends State<Mine> with SingleTickerProviderStateMixin {
                   child: SliverPersistentHeader(
                     pinned: true,
                     delegate: _SliverAppBarDelegate(
-                      minHeight: 60.0,
-                      maxHeight: 60.0,
+                      minHeight: 40.0,
+                      maxHeight: 40.0,
                       child: _tabBar,
                     ),
                   ),

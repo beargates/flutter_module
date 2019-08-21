@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:image_picker/image_picker.dart';
+
 class BaseInfo extends StatefulWidget {
   _BaseInfoState createState() => _BaseInfoState();
 }
@@ -15,13 +17,27 @@ class _BaseInfoState extends State<BaseInfo> {
     {"key": '地区', "value": '中国·北京·顺义'},
   ];
 
+  void takePhoto() async {
+    await ImagePicker.pickImage(source: ImageSource.camera);
+  }
+
+  void pickImage() async {
+    await ImagePicker.pickImage(source: ImageSource.gallery);
+  }
+
   void showActionSheet(BuildContext c) {
-//    Scaffold.of(c).showBottomSheet((_) {
-//      return Text('1234567890');
-//    });
     showBottomSheet(
         builder: (_) {
-          return Container(height: 500, child: Text('1234567890'));
+          /// todo SafeArea无效
+          return SafeArea(
+              child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: <Widget>[
+                FlatButton(child: Text('拍照'), onPressed: takePhoto),
+                Divider(),
+                FlatButton(child: Text('照片'), onPressed: pickImage),
+              ]));
         },
         context: c);
   }

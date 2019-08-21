@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'dart:async';
 
 import 'package:flutter/material.dart';
 
@@ -146,6 +147,69 @@ class Item extends StatefulWidget {
 }
 
 class _ItemState extends State<Item> {
+  PersistentBottomSheetController _controller;
+
+  void showComments(BuildContext c) {
+    _controller = showBottomSheet(
+        context: c,
+        builder: (_) {
+          return Container(
+            height: 460,
+            child: Stack(
+              children: <Widget>[
+                Column(
+                  children: <Widget>[
+                    Container(
+                        alignment: Alignment.center,
+                        padding: EdgeInsets.symmetric(vertical: 15),
+                        child: Text('99评论')),
+                    Expanded(
+                      child: ListView.builder(
+                        itemCount: 8,
+                        itemExtent: 70,
+                        itemBuilder: (BuildContext c, index) {
+                          return ListTile(
+                              leading: Container(
+                                width: 40,
+                                height: 40,
+                                child: CircleAvatar(
+                                  backgroundImage:
+                                      AssetImage('assets/avatar.png'),
+                                ),
+                              ),
+                              title: Text('麻球'),
+                              subtitle: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: <Widget>[
+                                  Text('在一起'),
+                                  Text(' 1小时前',
+                                      style: TextStyle(
+                                          color: Colors.grey, fontSize: 12))
+                                ],
+                              ),
+                              trailing: IconButton(
+                                  icon: Icon(Icons.favorite),
+                                  onPressed: () {}));
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+                Positioned(
+                    top: 0,
+                    right: 0,
+                    child: IconButton(
+                        icon: Icon(Icons.close), onPressed: closeSheet))
+              ],
+            ),
+          );
+        });
+  }
+
+  void closeSheet() {
+    _controller?.close();
+  }
+
   Widget right() {
     return Container(
       alignment: Alignment.bottomRight,
@@ -163,7 +227,13 @@ class _ItemState extends State<Item> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
-              IconButton(icon: Icon(Icons.message, size: 32), onPressed: () {}),
+              Builder(builder: (BuildContext c) {
+                return IconButton(
+                    icon: Icon(Icons.message, size: 32),
+                    onPressed: () {
+                      showComments(c);
+                    });
+              }),
               Text('1019')
             ],
           )

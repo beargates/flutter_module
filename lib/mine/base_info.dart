@@ -26,9 +26,9 @@ class _BaseInfoState extends State<BaseInfo> {
   }
 
   void showActionSheet(BuildContext c) {
-    showBottomSheet(
+    /// 调起类ActionSheet
+    showModalBottomSheet(
         builder: (_) {
-          /// todo SafeArea无效
           return SafeArea(
               child: Column(
                   mainAxisSize: MainAxisSize.min,

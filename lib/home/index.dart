@@ -52,17 +52,9 @@ class _HomeState extends State<Home> {
         elevation: 20.0,
       ),
       body: _tabbarViews.elementAt(_selectedIndex),
-//      body: Stack(
-//        children: _tabbarViews.map((Widget e) {
-//          var i = _tabbarViews.indexOf(e);
-//          print('$i,$_selectedIndex');
-//          // 首页feeds在active时，在模拟器里会大量占用cpu
-//          // todo 这么做无效
-//          if (_selectedIndex != 0 && i == 0) {
-//            return Container();
-//          }
-//          return Offstage(offstage: _selectedIndex != i, child: e);
-//        }).toList(),
+//      body: IndexedStack(
+//        index: _selectedIndex,
+//        children: _tabbarViews,
 //      ),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,

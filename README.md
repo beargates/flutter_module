@@ -9,6 +9,7 @@
     <img width="200" src="./assets/20190829161802.jpg" />
     <img width="200" src="./assets/20190829161839.jpg" />
     <img width="200" src="./assets/20190829161850.jpg" />
+    <img width="200" src="./assets/20190918194709.jpg" />
 </div>
 
 同时还具有上传图片/视频到七牛等功能

@@ -8,6 +8,4 @@ PODS_ROOT = ${SRCROOT}
 PODS_TARGET_SRCROOT = ${PODS_ROOT}/../Flutter/.symlinks/sy_flutter_qiniu_storage/ios
 PRODUCT_BUNDLE_IDENTIFIER = org.cocoapods.${PRODUCT_NAME:rfc1034identifier}
 SKIP_INSTALL = YES
-#include "/Users/duzefeng/app/hybrid/flutter/flutter_module/.ios/Flutter/Generated.xcconfig"
-#include "/Users/duzefeng/app/hybrid/flutter/flutter_module/.ios/Flutter/Generated.xcconfig"
-#include "/Users/duzefeng/app/hybrid/flutter/flutter_module/.ios/Flutter/Generated.xcconfig"
+USE_RECURSIVE_SCRIPT_INPUTS_IN_SCRIPT_PHASES = YES

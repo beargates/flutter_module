@@ -1,0 +1,1 @@
+../../../../Flutter/.symlinks/permission_handler/ios/Classes/strategies/SensorPermissionStrategy.h

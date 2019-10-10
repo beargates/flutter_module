@@ -9,11 +9,17 @@ PODS:
     - Flutter
     - flutter_webview_plugin
     - image_picker
+    - path_provider
+    - permission_handler
     - photo_manager
     - sy_flutter_qiniu_storage
     - video_player
   - HappyDNS (0.3.15)
   - image_picker (0.0.1):
+    - Flutter
+  - path_provider (0.0.1):
+    - Flutter
+  - permission_handler (3.2.2):
     - Flutter
   - photo_manager (0.0.1):
     - Flutter
@@ -26,50 +32,58 @@ PODS:
     - Flutter
 
 DEPENDENCIES:
-  - camera (from `../.ios/Flutter/.symlinks/camera/ios`)
-  - Flutter (from `../.ios/Flutter/engine`)
-  - flutter_webview_plugin (from `../.ios/Flutter/.symlinks/flutter_webview_plugin/ios`)
-  - FlutterPluginRegistrant (from `../.ios/Flutter/FlutterPluginRegistrant`)
-  - image_picker (from `../.ios/Flutter/.symlinks/image_picker/ios`)
-  - photo_manager (from `../.ios/Flutter/.symlinks/photo_manager/ios`)
-  - sy_flutter_qiniu_storage (from `../.ios/Flutter/.symlinks/sy_flutter_qiniu_storage/ios`)
-  - video_player (from `../.ios/Flutter/.symlinks/video_player/ios`)
+  - camera (from `Flutter/.symlinks/camera/ios`)
+  - Flutter (from `Flutter/engine`)
+  - flutter_webview_plugin (from `Flutter/.symlinks/flutter_webview_plugin/ios`)
+  - FlutterPluginRegistrant (from `Flutter/FlutterPluginRegistrant`)
+  - image_picker (from `Flutter/.symlinks/image_picker/ios`)
+  - path_provider (from `Flutter/.symlinks/path_provider/ios`)
+  - permission_handler (from `Flutter/.symlinks/permission_handler/ios`)
+  - photo_manager (from `Flutter/.symlinks/photo_manager/ios`)
+  - sy_flutter_qiniu_storage (from `Flutter/.symlinks/sy_flutter_qiniu_storage/ios`)
+  - video_player (from `Flutter/.symlinks/video_player/ios`)
 
 SPEC REPOS:
-  https://github.com/cocoapods/specs.git:
+  https://github.com/CocoaPods/Specs.git:
     - HappyDNS
     - Qiniu
 
 EXTERNAL SOURCES:
   camera:
-    :path: "../.ios/Flutter/.symlinks/camera/ios"
+    :path: Flutter/.symlinks/camera/ios
   Flutter:
-    :path: "../.ios/Flutter/engine"
+    :path: Flutter/engine
   flutter_webview_plugin:
-    :path: "../.ios/Flutter/.symlinks/flutter_webview_plugin/ios"
+    :path: Flutter/.symlinks/flutter_webview_plugin/ios
   FlutterPluginRegistrant:
-    :path: "../.ios/Flutter/FlutterPluginRegistrant"
+    :path: Flutter/FlutterPluginRegistrant
   image_picker:
-    :path: "../.ios/Flutter/.symlinks/image_picker/ios"
+    :path: Flutter/.symlinks/image_picker/ios
+  path_provider:
+    :path: Flutter/.symlinks/path_provider/ios
+  permission_handler:
+    :path: Flutter/.symlinks/permission_handler/ios
   photo_manager:
-    :path: "../.ios/Flutter/.symlinks/photo_manager/ios"
+    :path: Flutter/.symlinks/photo_manager/ios
   sy_flutter_qiniu_storage:
-    :path: "../.ios/Flutter/.symlinks/sy_flutter_qiniu_storage/ios"
+    :path: Flutter/.symlinks/sy_flutter_qiniu_storage/ios
   video_player:
-    :path: "../.ios/Flutter/.symlinks/video_player/ios"
+    :path: Flutter/.symlinks/video_player/ios
 
 SPEC CHECKSUMS:
   camera: d56ad165545ae5a0ffb892376033760a969c68c8
-  Flutter: 58dd7d1b27887414a370fcccb9e645c08ffd7a6a
+  Flutter: 0e3d915762c693b495b44d77113d4970485de6ec
   flutter_webview_plugin: ed9e8a6a96baf0c867e90e1bce2673913eeac694
-  FlutterPluginRegistrant: 638659fc101370c005eff8fa43f8b81f8e1ef761
+  FlutterPluginRegistrant: a699784994d19c8dce0c02fb3650a989c29740a5
   HappyDNS: 00c15e651a347206e58a20503a32a5564589b56a
   image_picker: 16e5fec1fbc87fd3b297c53e4048521eaf17cd06
+  path_provider: f96fff6166a8867510d2c25fdcc346327cc4b259
+  permission_handler: d59f41439f5bc6c4d1005f3355e98f05ddc68ece
   photo_manager: d47ddf6cb25cbfa837dc334540eb9a99b208e191
   Qiniu: 909b408ee489ea54827e9717be90b94bc9dfbc48
   sy_flutter_qiniu_storage: 3a33fb552bb77f4777d261469111f52ad35307fb
   video_player: 3964090a33353060ed7f58aa6427c7b4b208ec21
 
-PODFILE CHECKSUM: 90dfc4fa18acd85efb936f50be36bfca3bdef3e1
+PODFILE CHECKSUM: ccc93b84c27c7e3dba5217e26618c079a055318e
 
-COCOAPODS: 1.6.0
+COCOAPODS: 1.8.3

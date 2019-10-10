@@ -5,7 +5,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'package:photo_manager/photo_manager.dart';
-import 'package:permission_handler/permission_handler.dart';
 
 class PhotoLibrary extends StatefulWidget {
   _PhotoLibraryState createState() => _PhotoLibraryState();
@@ -39,23 +38,10 @@ class _PhotoLibraryState extends State<PhotoLibrary> {
   }
 
   void init() async {
-    //请求权限
-    /// 依然要在ios的info.plist中添加相关权限
-    Map<PermissionGroup, PermissionStatus> permissions =
-        await PermissionHandler().requestPermissions([PermissionGroup.photos]);
-    //校验权限
-    if (permissions[PermissionGroup.photos] != PermissionStatus.granted) {
-      return;
-    }
-    var result = await PhotoManager.requestPermission();
-    if (result) {
-      List<AssetPathEntity> list1 = await PhotoManager.getAssetPathList();
-      list = await list1.elementAt(1)?.assetList;
-      _thumbList = Future.wait(list.map((v) => v.thumbData));
-      setState(() {});
-    } else {
-      PhotoManager.openSetting();
-    }
+    var paths = await PhotoManager.getAssetPathList();
+    list = await paths.elementAt(1)?.assetList;
+    _thumbList = Future.wait(list.map((v) => v.thumbData));
+    setState(() {});
   }
 
   /// 打开预览
@@ -98,23 +84,22 @@ class _PhotoLibraryState extends State<PhotoLibrary> {
     return Container(
         color: Colors.black,
         child: PageView.builder(
-          controller: _pageController,
-          onPageChanged: (_) {
-            _index = _;
-            pageChangeController.add(_);
-          },
-          itemBuilder: previewItem,
-          itemCount: list.length,
-        ));
+            controller: _pageController,
+            onPageChanged: (_) {
+              _index = _;
+              pageChangeController.add(_);
+            },
+            itemBuilder: previewItem,
+            itemCount: list.length));
   }
 
   Widget build(BuildContext context) {
     if ((list?.length ?? 0) == 0) {
       return Container();
     }
-    return FutureBuilder<void>(
+    return FutureBuilder(
         future: _thumbList,
-        builder: (BuildContext context, AsyncSnapshot snapshot) {
+        builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.done) {
             return Stack(
               children: [

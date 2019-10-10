@@ -37,3 +37,4 @@ Icon?
 
 build/
 .flutter-plugins
+.ios/Flutter/

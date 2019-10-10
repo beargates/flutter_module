@@ -202,14 +202,16 @@ class _MineState extends State<Mine> with SingleTickerProviderStateMixin {
     return TabBarView(
         children: myTabs.map((index) {
       return SafeArea(
-          top: false,
-          bottom: false,
-          child: GridView.count(
-            mainAxisSpacing: 2,
-            crossAxisSpacing: 2,
-            children: _list,
-            crossAxisCount: 3,
-          )); //          child: Wrap(alignment: WrapAlignment.spaceBetween, children: _list));
+        top: false,
+        bottom: false,
+        child: GridView.count(
+          mainAxisSpacing: 2,
+          crossAxisSpacing: 2,
+          children: _list,
+          crossAxisCount: 3,
+        ),
+//        child: Wrap(alignment: WrapAlignment.spaceBetween, children: _list),
+      );
     }).toList());
   }
 
@@ -255,12 +257,18 @@ class _MineState extends State<Mine> with SingleTickerProviderStateMixin {
                                   context),
                           child: SliverPersistentHeader(
                               pinned: true,
-                              delegate: _SliverAppBarDelegate(
+                              delegate: _SliverPersistentHeaderDelegate(
                                 minHeight: 40.0,
                                 maxHeight: 40.0,
                                 child: _tabBar,
                               ))),
-//                      SliverFillRemaining(child: _tabBarView)
+//                      SliverPersistentHeader(
+//                          pinned: true,
+//                          delegate: _SliverPersistentHeaderDelegate(
+//                              minHeight: 400,
+//                              maxHeight: 400,
+//                              child:
+//                                  Container(height: 100, child: _tabBarView)))
                     ];
                   },
                   body: _tabBarView),
@@ -284,8 +292,8 @@ class _MineState extends State<Mine> with SingleTickerProviderStateMixin {
   }
 }
 
-class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
-  _SliverAppBarDelegate({
+class _SliverPersistentHeaderDelegate extends SliverPersistentHeaderDelegate {
+  _SliverPersistentHeaderDelegate({
     @required this.minHeight,
     @required this.maxHeight,
     @required this.child,
@@ -302,7 +310,7 @@ class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
   double get maxExtent => math.max(maxHeight, minHeight);
 
   @override
-  bool shouldRebuild(_SliverAppBarDelegate oldDelegate) {
+  bool shouldRebuild(_SliverPersistentHeaderDelegate oldDelegate) {
     return maxHeight != oldDelegate.maxHeight ||
         minHeight != oldDelegate.minHeight ||
         child != oldDelegate.child;

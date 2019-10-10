@@ -6,7 +6,7 @@ import '../feeds/index.dart';
 import '../follow/index.dart';
 import '../mine/index.dart';
 import '../utils/webview.dart';
-import '../follow/demo.dart';
+import '../components/image-picker/photo_library.dart';
 
 class Home extends StatefulWidget {
   @override
@@ -14,7 +14,7 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-  int _selectedIndex = 0;
+  int _selectedIndex = 2;
   static final List<Map<String, dynamic>> _bottomNavBarItems = [
     {"icon": Icons.list, "title": '首页'},
     {"icon": Icons.favorite, "title": '关注'},
@@ -25,7 +25,7 @@ class _HomeState extends State<Home> {
   static final _feeds = Feeds();
   static final _fllow = Follow();
   static final _webview = createBaiduView();
-  static final _demo = MyApp();
+  static final _demo = PhotoLibrary();
   static final _mine = Mine();
   static final List<Widget> _tabbarViews = [_feeds, _fllow, _demo, _mine];
 

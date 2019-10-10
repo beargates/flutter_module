@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:image_picker/image_picker.dart';
+import '../components/image-picker/photo.dart';
 
 class BaseInfo extends StatefulWidget {
   _BaseInfoState createState() => _BaseInfoState();
@@ -22,7 +23,8 @@ class _BaseInfoState extends State<BaseInfo> {
   }
 
   void pickImage() async {
-    await ImagePicker.pickImage(source: ImageSource.gallery);
+//    await ImagePicker.pickImage(source: ImageSource.gallery);
+    pickAsset(context);
   }
 
   void showActionSheet(BuildContext c) {

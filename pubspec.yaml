@@ -40,6 +40,8 @@ dependencies:
   toast: ^0.1.5
   photo: ^0.3.4
   uuid: 2.0.1
+  path_provider:
+  permission_handler:
 
 dev_dependencies:
   flutter_test:

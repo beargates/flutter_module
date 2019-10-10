@@ -3,8 +3,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
-import 'package:photo_manager/photo_manager.dart';
-
 import '../components/video-player/video_player.dart';
 
 class Feeds extends StatefulWidget {
@@ -16,7 +14,6 @@ class _FeedsState extends State<Feeds> {
   final double statusBarHeight = MediaQueryData.fromWindow(window).padding.top;
   final double bottomTabBarHeight =
       MediaQueryData.fromWindow(window).padding.bottom;
-  List<AssetEntity> list;
   List<String> videoList = [
     'https://asset.txqn.huohua.cn/video/0f2a0ebb-c2c6-495d-925f-4a8b97671a36.mp4',
     'https://asset.txqn.huohua.cn/video/79663ecf-e10c-4452-9496-9eb8051b9af5.mp4',
@@ -29,30 +26,9 @@ class _FeedsState extends State<Feeds> {
   PageController _controller = PageController();
   int current;
 
-//  @override
-//  initState() {
-//    super.initState();
-//
-//    init();
-//  }
-
-  @override
   void dispose() {
     _controller.dispose();
     super.dispose();
-  }
-
-  void init() async {
-    var result = await PhotoManager.requestPermission();
-    if (result) {
-      List<AssetPathEntity> list1 = await PhotoManager.getAssetPathList();
-      list = await list1.elementAt(1)?.assetList;
-      print(list1);
-//      list = await ImagePathEntity.all.imageList;
-      setState(() {});
-    } else {
-      PhotoManager.openSetting();
-    }
   }
 
   void onPageChanged(int index) {
@@ -103,7 +79,6 @@ class _FeedsState extends State<Feeds> {
     );
   }
 
-  @override
   Widget build(BuildContext context) {
     if (videoList == null || videoList.length == 0) {
       return Container();

@@ -144,7 +144,7 @@ class _MineState extends State<Mine> with SingleTickerProviderStateMixin {
                 FlatButton(
                   padding: EdgeInsets.zero,
                   color: Color(0xff232530),
-                  child: Text('哈尔滨商业大学',
+                  child: Text('北京科技大学',
                       style: TextStyle(color: Colors.grey, fontSize: 16)),
                   onPressed: () {},
                 )

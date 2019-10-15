@@ -1,4 +1,4 @@
-import 'dart:async';
+//import 'dart:async';
 import 'dart:ui';
 
 import 'package:flutter/gestures.dart';
@@ -35,8 +35,8 @@ class _PhotoPreviewState extends State<PhotoPreview> {
   OverlayEntry overlayEntry;
   bool horizontalScrolling;
   double opacity = 0.5;
-  DragStartDetails _start;
-  Offset _offset;
+//  DragStartDetails _start;
+//  Offset _offset;
 
 //  GlobalKey targetKey = GlobalKey();
 
@@ -81,34 +81,7 @@ class _PhotoPreviewState extends State<PhotoPreview> {
     }
     return CustomDraggable(
       feedback: child,
-      context: context,
-      opacity: _index != index ? 0 : 0.5,
-//      onTapDown: (_){
-//        setState(() {
-//          opacity = 0;
-//        });
-//      },
-      onHorizontalDragStart: (e) {
-        _start = e;
-      },
-      onHorizontalDragUpdate: (e) {
-        var offset = e.globalPosition.dx - _start.globalPosition.dx;
-        _pageController.animateTo(
-          0,
-          duration: e.sourceTimeStamp - _start.sourceTimeStamp,
-          curve: Curves.linear,
-        );
-      },
-    );
-    return Stack(
-      children: [
-        child,
-        CustomDraggable(
-            feedback: child,
-            context: context,
-            opacity: _index != index ? 0 : 1),
-      ],
-    );
+      opacity: _index != index ? 0 : 1);
   }
 
   Widget previewItem(ctx, index) {
@@ -122,7 +95,7 @@ class _PhotoPreviewState extends State<PhotoPreview> {
         feedback: feedback,
         onDragStarted: startDragging,
         onDragEnd: (_) {
-//          widget.exitPreview(_);
+          widget.exitPreview(_);
         });
   }
 

@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 
 class CustomDraggable extends StatefulWidget {
   final Widget feedback;
-  final BuildContext context;
   final double opacity;
   final GestureTapDownCallback onTapDown;
   final GestureTapUpCallback onTapUp;
@@ -17,7 +16,6 @@ class CustomDraggable extends StatefulWidget {
 
   CustomDraggable({
     @required this.feedback,
-    @required this.context,
     this.opacity = 1,
     this.onTapDown,
     this.onTapUp,
@@ -36,6 +34,8 @@ class _CustomDraggableState extends State<CustomDraggable> {
   Offset _startOffset;
   Offset _offset = Offset(0, 0);
   OverlayEntry _entry;
+  double _opacity = 0;
+  dynamic direction;
 
   void initState() {
     super.initState();
@@ -47,16 +47,14 @@ class _CustomDraggableState extends State<CustomDraggable> {
         right: -_offset.dx,
         bottom: -_offset.dy,
         child: IgnorePointer(
-          child: widget.opacity == 1
-              ? widget.feedback
-              : Opacity(opacity: widget.opacity, child: widget.feedback),
+          child: Opacity(opacity: widget.opacity, child: widget.feedback),
           ignoringSemantics: true,
         ),
       );
     });
 
-    Future.delayed(Duration(milliseconds: 100)).then((_) {
-      Overlay.of(widget.context).insert(_entry);
+    Future.delayed(Duration(seconds: 0)).then((_) {
+      Overlay.of(context).insert(_entry);
     });
   }
 
@@ -72,41 +70,50 @@ class _CustomDraggableState extends State<CustomDraggable> {
 
   Widget build(ctx) {
     /// 创建opacity为0的widget是为了可以响应手势处理
-    return GestureDetector(
-        onPanStart: (e) {
-          _startOffset = e.globalPosition;
+    return Listener(
+        onPointerDown: (e) {
+          _startOffset = e.position;
         },
-        onPanUpdate: (e) {
-          print('paning');
-          _offset = Offset(
-            e.globalPosition.dx - _startOffset.dx,
-            e.globalPosition.dy - _startOffset.dy,
-          );
+        onPointerMove: (e) {
+          var offset = e.position - _startOffset;
 
-          _entry.markNeedsBuild();
+          /// 横向处理
+          if (offset.dx >= 5) {
+            /// 方向锁定
+            if (direction == null) {
+              direction = 0;
+            }
+            if (direction == 0) {
+              if (_opacity != 1) {
+                _opacity = 1;
+                setState(() {});
+              }
+              _entry.markNeedsBuild();
+            }
+          }
+
+          /// 纵向处理
+          if (offset.dy >= 5) {
+            /// 方向锁定
+            if (direction == null) {
+              direction = 1;
+            }
+            if (direction == 1) {
+              _offset = offset;
+              _entry.markNeedsBuild();
+              setState(() {});
+            }
+          }
         },
-//        onTapDown: (_) {
-//          print('tapdown');
-//          setState(() {
-//
-//            Future.delayed(Duration(milliseconds: 100)).then((_){
-//              widget.onTapDown(_);
-//            });
-//          });
-//        },
-//        onTapCancel: (){
-//          print('cancel');
-//        },
-//        onTapUp: (_) {
-//          print('tapup');
-////          widget.onTapUp(_);
-//        },
-        onHorizontalDragDown: widget.onHorizontalDragDown,
-        onHorizontalDragStart: widget.onHorizontalDragStart,
-        onHorizontalDragUpdate: widget.onHorizontalDragUpdate,
-        onHorizontalDragEnd: widget.onHorizontalDragEnd,
-        child: Opacity(
-            opacity: 0,
-            child: widget.feedback));
+        onPointerUp: (_) {
+          direction = null;
+        },
+        onPointerCancel: (_) {
+          direction = null;
+        },
+        behavior: direction == 1
+            ? HitTestBehavior.translucent
+            : HitTestBehavior.opaque,
+        child: Opacity(opacity: _opacity, child: widget.feedback));
   }
 }

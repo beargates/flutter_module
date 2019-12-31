@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
@@ -38,6 +39,11 @@ class _CustomDraggableState extends State<CustomDraggable>
     with SingleTickerProviderStateMixin {
   AnimationController _controller;
 
+  double _deltaY = 0;
+
+  static final double screenHeight =
+      window.physicalSize.height / window.devicePixelRatio;
+
   void initState() {
     super.initState();
 
@@ -55,8 +61,14 @@ class _CustomDraggableState extends State<CustomDraggable>
   _move(_) {
     double delta = _.primaryDelta / _height;
     _controller.value += delta;
+    _deltaY += _.primaryDelta;
     widget.onVerticalDragUpdate(_);
 //    print(_controller.value);
+  }
+
+  _end(_) {
+    _deltaY = 0;
+    widget.onVerticalDragEnd(_);
   }
 
   final GlobalKey _drawerKey = GlobalKey();
@@ -68,15 +80,19 @@ class _CustomDraggableState extends State<CustomDraggable>
   }
 
   Widget build(ctx) {
+    var _scale = 1 - _deltaY / screenHeight;
+    _scale = math.min(1, _scale);
     return GestureDetector(
         onVerticalDragUpdate: _move,
-        onVerticalDragEnd: widget.onVerticalDragEnd,
+        onVerticalDragEnd: _end,
         child: RepaintBoundary(
             child: Center(
                 child: Align(
                     alignment: AlignmentDirectional.bottomCenter,
-                    heightFactor: (_controller.value + 1) * 1.5,
-                    child:
-                        Container(key: _drawerKey, child: widget.feedback)))));
+                    heightFactor: _controller.value * 1.5 + 1,
+                    child: Transform.scale(
+                        key: _drawerKey,
+                        scale: _scale,
+                        child: widget.feedback)))));
   }
 }

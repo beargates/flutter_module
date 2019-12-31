@@ -1,4 +1,3 @@
-//import 'dart:async';
 import 'dart:ui';
 import 'dart:math' as math;
 
@@ -25,7 +24,6 @@ class _PhotoPreviewState extends State<PhotoPreview> {
   bool dragging = false;
   bool showLayer = false;
 
-//  static final GlobalKey pageViewKey = GlobalKey();
   double pageViewHeight;
 
   /// 屏幕宽度（or MediaQuery.of(context).size.width）
@@ -34,48 +32,26 @@ class _PhotoPreviewState extends State<PhotoPreview> {
   static final double screenHeight =
       window.physicalSize.height / window.devicePixelRatio;
   PageController _pageController;
-  int _index;
   List<BigImage> _list;
   OverlayEntry overlayEntry;
   bool horizontalScrolling;
   double opacity = 0.5;
   double _deltaY = 0;
 
-//  DragStartDetails _start;
-//  Offset _offset;
-
-//  GlobalKey targetKey = GlobalKey();
-
   initState() {
     super.initState();
 
     horizontalScrolling = false;
-    _index = widget.initialPage;
     _list = widget.list.map((v) {
       var index = widget.list.indexOf(v);
       return BigImage(entity: widget.list[index]);
     }).toList();
     _pageController = PageController(initialPage: widget.initialPage);
-//    _pageController.addListener(() {
-//      print('h-scrolling');
-//      if (!horizontalScrolling) {
-//        setState(() {
-//          horizontalScrolling = true;
-//        });
-//      }
-//    });
   }
 
   void dispose() {
     super.dispose();
     _pageController?.dispose();
-  }
-
-  void startDragging() {
-//    pageViewHeight = targetKey.currentContext.size.height;
-//    var renderObject = targetKey.currentContext.findRenderObject();
-//    var context = RenderAbstractViewport.of(renderObject);
-//    var top = context.getOffsetToReveal(renderObject, 0);
   }
 
   toggleLayer() {
@@ -84,7 +60,7 @@ class _PhotoPreviewState extends State<PhotoPreview> {
     });
   }
 
-  Widget previewCustomDragItem(ctx, index) {
+  Widget previewItem(ctx, index) {
     var child = _list[index];
     return CustomDraggable(
         feedback: child,
@@ -98,21 +74,6 @@ class _PhotoPreviewState extends State<PhotoPreview> {
         });
   }
 
-  Widget previewItem(ctx, index) {
-    var target = BigImage(entity: widget.list[index]);
-    var feedback =
-        Container(width: screenWidth, height: 813.0 - 56, child: target);
-    return Draggable(
-        affinity: Axis.vertical,
-        child: target,
-        childWhenDragging: Container(),
-        feedback: feedback,
-        onDragStarted: startDragging,
-        onDragEnd: (_) {
-          widget.exitPreview(_);
-        });
-  }
-
   Widget build(BuildContext context) {
     var validDis = math.max(0, _deltaY);
     var alpha = (1 - validDis / screenHeight * 5);
@@ -121,12 +82,9 @@ class _PhotoPreviewState extends State<PhotoPreview> {
       children: [
         Container(color: Color.fromARGB((alpha * 255).toInt(), 0, 0, 0)),
         PageView.builder(
-//          key: pageViewKey,
             controller: _pageController,
-            onPageChanged: (_) {
-              _index = _;
-            },
-            itemBuilder: previewCustomDragItem,
+            onPageChanged: (_) {},
+            itemBuilder: previewItem,
             itemCount: widget.list.length,
             dragStartBehavior: DragStartBehavior.start)
       ],

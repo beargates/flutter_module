@@ -37,4 +37,6 @@ Icon?
 
 build/
 .flutter-plugins
+.flutter-plugins-dependencies
 .ios/Flutter/
+.ios/Pods

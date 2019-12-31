@@ -11,6 +11,7 @@
 #import "QNSessionManager.h"
 #import "QNSystem.h"
 #import "QNUpToken.h"
+#import "QNUploadInfoReporter.h"
 
 const UInt32 kQNBlockSize = 4 * 1024 * 1024;
 
@@ -43,6 +44,12 @@ const UInt32 kQNBlockSize = 4 * 1024 * 1024;
         _zone = builder.zone;
 
         _useHttps = builder.useHttps;
+        
+        _reportConfig = builder.reportConfig;
+
+        _useConcurrentResumeUpload = builder.useConcurrentResumeUpload;
+        
+        _concurrentTaskCount = builder.concurrentTaskCount;
     }
     return self;
 }
@@ -58,6 +65,7 @@ const UInt32 kQNBlockSize = 4 * 1024 * 1024;
         _putThreshold = 4 * 1024 * 1024;
         _retryMax = 3;
         _timeoutInterval = 60;
+        _reportConfig = [QNReportConfig sharedInstance];
 
         _recorder = nil;
         _recorderKeyGen = nil;
@@ -72,6 +80,8 @@ const UInt32 kQNBlockSize = 4 * 1024 * 1024;
         }
 
         _useHttps = YES;
+        _useConcurrentResumeUpload = NO;
+        _concurrentTaskCount = 3;
     }
     return self;
 }

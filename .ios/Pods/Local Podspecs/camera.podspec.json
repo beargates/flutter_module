@@ -22,5 +22,16 @@
   },
   "platforms": {
     "ios": "8.0"
-  }
+  },
+  "pod_target_xcconfig": {
+    "DEFINES_MODULE": "YES",
+    "VALID_ARCHS": "armv7 arm64 x86_64"
+  },
+  "testspecs": [
+    {
+      "name": "Tests",
+      "test_type": "unit",
+      "source_files": "Tests/**/*"
+    }
+  ]
 }

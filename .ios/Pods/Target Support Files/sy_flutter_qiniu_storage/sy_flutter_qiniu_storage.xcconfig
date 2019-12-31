@@ -1,7 +1,7 @@
 CONFIGURATION_BUILD_DIR = ${PODS_CONFIGURATION_BUILD_DIR}/sy_flutter_qiniu_storage
-FRAMEWORK_SEARCH_PATHS = $(inherited) "${PODS_ROOT}/../Flutter/engine"
+FRAMEWORK_SEARCH_PATHS = $(inherited) "${PODS_CONFIGURATION_BUILD_DIR}/Qiniu" "${PODS_ROOT}/../Flutter/engine"
 GCC_PREPROCESSOR_DEFINITIONS = $(inherited) COCOAPODS=1
-HEADER_SEARCH_PATHS = $(inherited) "${PODS_ROOT}/Headers/Private" "${PODS_ROOT}/Headers/Private/sy_flutter_qiniu_storage" "${PODS_ROOT}/Headers/Public" "${PODS_ROOT}/Headers/Public/HappyDNS" "${PODS_ROOT}/Headers/Public/Qiniu" "${PODS_ROOT}/Headers/Public/sy_flutter_qiniu_storage"
+OTHER_LDFLAGS = $(inherited) -framework "Flutter"
 PODS_BUILD_DIR = ${BUILD_DIR}
 PODS_CONFIGURATION_BUILD_DIR = ${PODS_BUILD_DIR}/$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)
 PODS_ROOT = ${SRCROOT}

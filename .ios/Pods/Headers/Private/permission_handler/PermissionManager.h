@@ -1,1 +1,0 @@
-../../../../Flutter/.symlinks/permission_handler/ios/Classes/PermissionManager.h

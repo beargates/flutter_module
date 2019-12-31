@@ -1,5 +1,6 @@
 //import 'dart:async';
 import 'dart:ui';
+import 'dart:math' as math;
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/rendering.dart';
@@ -30,11 +31,16 @@ class _PhotoPreviewState extends State<PhotoPreview> {
   /// 屏幕宽度（or MediaQuery.of(context).size.width）
   static final double screenWidth =
       window.physicalSize.width / window.devicePixelRatio;
+  static final double screenHeight =
+      window.physicalSize.height / window.devicePixelRatio;
   PageController _pageController;
   int _index;
+  List<BigImage> _list;
   OverlayEntry overlayEntry;
   bool horizontalScrolling;
   double opacity = 0.5;
+  double _deltaY = 0;
+
 //  DragStartDetails _start;
 //  Offset _offset;
 
@@ -45,6 +51,10 @@ class _PhotoPreviewState extends State<PhotoPreview> {
 
     horizontalScrolling = false;
     _index = widget.initialPage;
+    _list = widget.list.map((v) {
+      var index = widget.list.indexOf(v);
+      return BigImage(entity: widget.list[index]);
+    }).toList();
     _pageController = PageController(initialPage: widget.initialPage);
 //    _pageController.addListener(() {
 //      print('h-scrolling');
@@ -75,13 +85,17 @@ class _PhotoPreviewState extends State<PhotoPreview> {
   }
 
   Widget previewCustomDragItem(ctx, index) {
-    var child = BigImage(entity: widget.list[index]);
-    if (horizontalScrolling) {
-      return child;
-    }
+    var child = _list[index];
     return CustomDraggable(
-      feedback: child,
-      opacity: _index != index ? 0 : 1);
+        feedback: child,
+        onVerticalDragUpdate: (_) {
+          _deltaY += _.primaryDelta;
+          setState(() {});
+        },
+        onVerticalDragEnd: (_) {
+          _deltaY = 0;
+          widget.exitPreview(_);
+        });
   }
 
   Widget previewItem(ctx, index) {
@@ -100,17 +114,22 @@ class _PhotoPreviewState extends State<PhotoPreview> {
   }
 
   Widget build(BuildContext context) {
-    return Container(
-      color: Colors.black,
-      child: PageView.builder(
+    var validDis = math.max(0, _deltaY);
+    var alpha = (1 - validDis / screenHeight * 5);
+    alpha = math.max(0, alpha);
+    return Stack(
+      children: [
+        Container(color: Color.fromARGB((alpha * 255).toInt(), 0, 0, 0)),
+        PageView.builder(
 //          key: pageViewKey,
-          controller: _pageController,
-          onPageChanged: (_) {
-            _index = _;
-          },
-          itemBuilder: previewItem,
-          itemCount: widget.list.length,
-          dragStartBehavior: DragStartBehavior.start),
+            controller: _pageController,
+            onPageChanged: (_) {
+              _index = _;
+            },
+            itemBuilder: previewCustomDragItem,
+            itemCount: widget.list.length,
+            dragStartBehavior: DragStartBehavior.start)
+      ],
     );
   }
 }

@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
-import 'dart:async';
-import 'dart:io';
-import 'package:flutter/services.dart';
 import '../feeds/index.dart';
 import '../follow/index.dart';
 import '../mine/index.dart';
-import '../utils/webview.dart';
+//import '../utils/webview.dart';
 import '../components/image-picker/photo_library.dart';
 
 class Home extends StatefulWidget {
@@ -24,7 +21,7 @@ class _HomeState extends State<Home> {
 
   static final _feeds = Feeds();
   static final _fllow = Follow();
-  static final _webview = createBaiduView();
+//  static final _webview = createBaiduView();
   static final _demo = PhotoLibrary();
   static final _mine = Mine();
   static final List<Widget> _tabbarViews = [_feeds, _fllow, _demo, _mine];
@@ -40,9 +37,9 @@ class _HomeState extends State<Home> {
 //      exit(0);
 //    });
 //  }
-  static createBaiduView() {
-    return LoadWebView('https://www.baidu.com');
-  }
+//  static createBaiduView() {
+//    return LoadWebView('https://www.baidu.com');
+//  }
 
   @override
   Widget build(BuildContext context) {

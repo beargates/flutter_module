@@ -13,8 +13,14 @@
   "source": {
     "path": "."
   },
-  "source_files": "Classes/**/*",
-  "public_header_files": "Classes/**/*.h",
+  "source_files": [
+    "Classes/**/*",
+    "Classes/**/**/*"
+  ],
+  "public_header_files": [
+    "Classes/**/*.h",
+    "Classes/**/**/*.h"
+  ],
   "dependencies": {
     "Flutter": [
 

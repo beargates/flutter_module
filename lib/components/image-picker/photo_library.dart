@@ -22,7 +22,7 @@ class _PhotoLibraryState extends State<PhotoLibrary> {
 
   void init() async {
     var paths = await PhotoManager.getAssetPathList();
-    list = await paths.elementAt(1)?.assetList;
+    list = await paths.elementAt(0)?.assetList;
     _thumbList = Future.wait(list.map((v) => v.thumbData));
     setState(() {});
   }

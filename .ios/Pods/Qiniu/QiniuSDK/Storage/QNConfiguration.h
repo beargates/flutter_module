@@ -7,7 +7,6 @@
 //
 
 #import <Foundation/Foundation.h>
-
 #import "QNRecorderDelegate.h"
 
 /**
@@ -26,6 +25,7 @@ typedef NSString * (^QNUrlConvert)(NSString *url);
 
 @class QNConfigurationBuilder;
 @class QNZone;
+@class QNReportConfig;
 /**
  *    Builder block
  *
@@ -63,7 +63,19 @@ typedef void (^QNConfigurationBuilderBlock)(QNConfigurationBuilder *builder);
 /**
  *    是否使用 https，默认为 YES
  */
-@property (nonatomic, assign) BOOL useHttps;
+@property (nonatomic, assign, readonly) BOOL useHttps;
+
+/**
+  *   是否开启并发分片上传，默认为NO
+  */
+@property (nonatomic, assign, readonly) BOOL useConcurrentResumeUpload;
+
+/**
+ *   并发分片上传的并发任务个数，在concurrentResumeUpload为YES时有效，默认为3个
+ */
+@property (nonatomic, assign, readonly) UInt32 concurrentTaskCount;
+
+@property (nonatomic, readonly) QNReportConfig *reportConfig;
 
 @property (nonatomic, readonly) id<QNRecorderDelegate> recorder;
 
@@ -72,7 +84,6 @@ typedef void (^QNConfigurationBuilderBlock)(QNConfigurationBuilder *builder);
 @property (nonatomic, readonly) NSDictionary *proxy;
 
 @property (nonatomic, readonly) QNUrlConvert converter;
-
 
 @property (readonly) BOOL disableATS;
 
@@ -219,14 +230,25 @@ typedef void (^QNPrequeryReturn)(int code);
  */
 @property (nonatomic, assign) BOOL useHttps;
 
+/**
+ *   是否开启并发分片上传，默认为NO
+ */
+@property (nonatomic, assign) BOOL useConcurrentResumeUpload;
+
+/**
+ *   并发分片上传的并发任务个数，在concurrentResumeUpload为YES时有效，默认为3个
+ */
+@property (nonatomic, assign) UInt32 concurrentTaskCount;
+
 @property (nonatomic, strong) id<QNRecorderDelegate> recorder;
 
 @property (nonatomic, strong) QNRecorderKeyGenerator recorderKeyGen;
 
+@property (nonatomic, strong) QNReportConfig *reportConfig;
+
 @property (nonatomic, strong) NSDictionary *proxy;
 
 @property (nonatomic, strong) QNUrlConvert converter;
-
 
 @property (assign) BOOL disableATS;
 

@@ -80,16 +80,15 @@ class _CustomDraggableState extends State<CustomDraggable>
   }
 
   Widget build(ctx) {
-    var _scale = 1 - _deltaY / screenHeight;
+    var _scale = 1 - _deltaY / screenHeight / 1.5;
     _scale = math.min(1, _scale);
     return GestureDetector(
         onVerticalDragUpdate: _move,
         onVerticalDragEnd: _end,
         child: RepaintBoundary(
             child: Center(
-                child: Align(
-                    alignment: AlignmentDirectional.bottomCenter,
-                    heightFactor: _controller.value * 1.5 + 1,
+                child: Transform.translate(
+                    offset: Offset(0, _deltaY),
                     child: Transform.scale(
                         key: _drawerKey,
                         scale: _scale,

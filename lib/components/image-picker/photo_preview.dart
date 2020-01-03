@@ -75,7 +75,7 @@ class _PhotoPreviewState extends State<PhotoPreview> {
         getRect: () {
           return widget.getRect(_index);
         },
-        onVerticalDragUpdate: (_) {
+        onPanUpdate: (_) {
           _deltaY += _.delta.dy;
           setState(() {});
         },

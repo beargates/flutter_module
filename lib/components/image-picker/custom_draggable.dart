@@ -5,36 +5,20 @@ import 'package:flutter/material.dart';
 
 import '../../utils/rect.dart';
 
-const Duration _endDuration = Duration(milliseconds: 300);
+const Duration _endDuration = Duration(milliseconds: 200);
 
 class CustomDraggable extends StatefulWidget {
   final Widget feedback;
   final double opacity;
   final Function getRect;
-  final GestureTapDownCallback onTapDown;
-  final GestureTapUpCallback onTapUp;
-  final GestureDragDownCallback onHorizontalDragDown;
-  final GestureDragStartCallback onHorizontalDragStart;
-  final GestureDragUpdateCallback onHorizontalDragUpdate;
-  final GestureDragEndCallback onHorizontalDragEnd;
-  final GestureDragDownCallback onVerticalDragDown;
-  final GestureDragUpdateCallback onVerticalDragUpdate;
-  final GestureDragEndCallback onVerticalDragEnd;
+  final GestureDragUpdateCallback onPanUpdate;
   final Function onEnd;
 
   CustomDraggable({
     @required this.feedback,
     this.opacity = 1,
     this.getRect,
-    this.onTapDown,
-    this.onTapUp,
-    this.onHorizontalDragDown,
-    this.onHorizontalDragStart,
-    this.onHorizontalDragUpdate,
-    this.onHorizontalDragEnd,
-    this.onVerticalDragDown,
-    this.onVerticalDragUpdate,
-    this.onVerticalDragEnd,
+    this.onPanUpdate,
     this.onEnd,
   });
 
@@ -44,9 +28,7 @@ class CustomDraggable extends StatefulWidget {
 class _CustomDraggableState extends State<CustomDraggable>
     with SingleTickerProviderStateMixin {
   AnimationController _endController;
-  Animation<Rect> endAnimation;
-//  CurvedAnimation _curvedEndAnimation;
-  Animation<Alignment> alignAnimation;
+  Animation<Rect> _endAnimation;
 
   Offset _delta = Offset.zero;
   double _scale = 1;
@@ -71,40 +53,47 @@ class _CustomDraggableState extends State<CustomDraggable>
     _scale = 1 - _delta.dy / screenHeight / 1.5;
     _scale = math.min(1, _scale);
 
-    widget.onVerticalDragUpdate(_);
+    widget.onPanUpdate(_);
     setState(() {});
+  }
+
+  /// 获取四边中位移最长的一个
+  double getLongestDuration(Rect source, Rect target) {
+    var deltaX = source.width * (1 - _scale) / 2 + _delta.dx;
+    var deltaY = source.height * (1 - _scale) / 2 + _delta.dy;
+    var top = source.top + deltaY;
+    var bottom = top + source.height / 2;
+    var left = source.left + deltaX;
+    var right = left + source.width / 2;
+    return math.max(
+        math.max(target.top - top, target.top + target.height - bottom),
+        math.max(target.left - left, target.left + target.width - right));
   }
 
   _end(_) {
     _ending = true;
 
-    var pos = widget.getRect();
-    var pos1 = dragItemRect;
-    var _scale = 1 - _delta.dy / screenHeight / 1.5;
-    _scale = math.min(1, _scale);
+    var source = dragItemRect;
+    var target = widget.getRect();
     _endController = AnimationController(
-        duration: _endDuration * ((pos1.top + _delta.dy - pos.top) / 200),
+        duration: _endDuration * (getLongestDuration(source, target) / 200),
         vsync: this);
-    alignAnimation =
-        AlignmentTween(begin: Alignment(0, 0), end: Alignment(-1, -1))
-            .animate(_endController);
-    endAnimation = RectTween(
+    _endAnimation = RectTween(
         begin: Rect.fromLTWH(
           _delta.dx,
           _delta.dy,
-          pos1.width * _scale,
-          pos1.height * _scale,
+          source.width * _scale,
+          source.height * _scale,
         ),
         end: Rect.fromLTWH(
-          pos.left - pos1.left,
-          pos.top - pos1.top,
-          pos.width,
-          pos.height,
+          target.left + target.width / 2 - source.width / 2 - source.left,
+          target.top + target.height / 2 - source.height / 2 - source.top,
+          target.width,
+          target.height,
         )).animate(_endController);
-    endAnimation
+    _endAnimation
       ..addListener(animUpdate)
       ..addStatusListener(endAnimationStatusCallback);
-//    CurveTween(curve: Curves.easeOut).animate(endAnimation);
     _endController.forward();
   }
 
@@ -124,7 +113,7 @@ class _CustomDraggableState extends State<CustomDraggable>
     var offset = _delta;
     var scale = _scale;
     if (_ending) {
-      var rect = endAnimation?.value;
+      var rect = _endAnimation ?.value;
       offset = Offset(rect.left, rect.top);
       scale = rect.height / dragItemRect.height;
     }
@@ -137,8 +126,6 @@ class _CustomDraggableState extends State<CustomDraggable>
                     key: _dragItemKey,
                     offset: offset,
                     child: Transform.scale(
-                        alignment: alignAnimation?.value ??
-                            AlignmentDirectional.center,
                         scale: scale,
                         child: widget.feedback)))));
   }

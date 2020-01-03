@@ -5,13 +5,13 @@ import 'package:flutter/material.dart';
 
 import '../../utils/rect.dart';
 
-const Duration _endDuration = Duration(milliseconds: 200);
+const Duration _endDuration = Duration(milliseconds: 2000);
 
 class CustomDraggable extends StatefulWidget {
   final Widget feedback;
   final double opacity;
   final Function getRect;
-  final GestureDragUpdateCallback onPanUpdate;
+  final Function onPanUpdate;
   final Function onEnd;
 
   CustomDraggable({
@@ -62,7 +62,8 @@ class _CustomDraggableState extends State<CustomDraggable>
     _scale = 1 - _delta.dy / screenHeight / 1.5;
     _scale = math.min(1, _scale);
 
-    widget.onPanUpdate(_);
+    setState(() {});
+    widget.onPanUpdate(_delta.dy);
   }
 
   _end(_) {
@@ -102,6 +103,7 @@ class _CustomDraggableState extends State<CustomDraggable>
 
   animUpdate() {
     setState(() {});
+    widget.onPanUpdate(_endAnimation?.value?.top ?? 0);
   }
 
   endAnimationStatusCallback(status) {

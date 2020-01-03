@@ -26,35 +26,21 @@ class CustomDraggable extends StatefulWidget {
 }
 
 class _CustomDraggableState extends State<CustomDraggable>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   AnimationController _endController;
   Animation<Rect> _endAnimation;
 
   Offset _delta = Offset.zero;
+  Offset _lastDelta = Offset.zero;
   double _scale = 1;
   bool _ending = false;
 
   static final double screenHeight =
       window.physicalSize.height / window.devicePixelRatio;
 
-  dispose() {
-    super.dispose();
-
-    _endController?.dispose();
-  }
-
   get dragItemRect {
     var cur = _dragItemKey.currentContext.findRenderObject();
     return getRect(cur);
-  }
-
-  _move(_) {
-    _delta += _.delta;
-    _scale = 1 - _delta.dy / screenHeight / 1.5;
-    _scale = math.min(1, _scale);
-
-    widget.onPanUpdate(_);
-    setState(() {});
   }
 
   /// 获取四边中位移最长的一个
@@ -70,11 +56,28 @@ class _CustomDraggableState extends State<CustomDraggable>
         math.max(target.left - left, target.left + target.width - right));
   }
 
+  _move(_) {
+    _lastDelta = _.delta;
+    _delta += _lastDelta;
+    _scale = 1 - _delta.dy / screenHeight / 1.5;
+    _scale = math.min(1, _scale);
+
+    widget.onPanUpdate(_);
+  }
+
   _end(_) {
     _ending = true;
 
+    if (_lastDelta.dy >= -1) {
+      var target = widget.getRect();
+      animateTo(target);
+    } else {
+      animateTo(dragItemRect);
+    }
+  }
+
+  animateTo(Rect target) {
     var source = dragItemRect;
-    var target = widget.getRect();
     _endController = AnimationController(
         duration: _endDuration * (getLongestDuration(source, target) / 200),
         vsync: this);
@@ -103,7 +106,14 @@ class _CustomDraggableState extends State<CustomDraggable>
 
   endAnimationStatusCallback(status) {
     if (status == AnimationStatus.completed) {
-      widget.onEnd();
+      if (_lastDelta.dy >= -1) {
+        widget.onEnd();
+      }
+      _lastDelta = Offset.zero;
+      _delta = Offset.zero;
+      _scale = 1;
+      _ending = false;
+      _endController?.dispose();
     }
   }
 
@@ -113,7 +123,7 @@ class _CustomDraggableState extends State<CustomDraggable>
     var offset = _delta;
     var scale = _scale;
     if (_ending) {
-      var rect = _endAnimation ?.value;
+      var rect = _endAnimation?.value;
       offset = Offset(rect.left, rect.top);
       scale = rect.height / dragItemRect.height;
     }
@@ -126,7 +136,6 @@ class _CustomDraggableState extends State<CustomDraggable>
                     key: _dragItemKey,
                     offset: offset,
                     child: Transform.scale(
-                        scale: scale,
-                        child: widget.feedback)))));
+                        scale: scale, child: widget.feedback)))));
   }
 }

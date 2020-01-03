@@ -13,8 +13,13 @@ class PhotoPreview extends StatefulWidget {
   final List<AssetEntity> list;
   final int initialPage;
   final exitPreview;
+  final Function getRect;
 
-  PhotoPreview({@required this.list, this.initialPage = 0, this.exitPreview});
+  PhotoPreview(
+      {@required this.list,
+      this.initialPage = 0,
+      this.exitPreview,
+      this.getRect});
 
   _PhotoPreviewState createState() => _PhotoPreviewState();
 }
@@ -37,6 +42,7 @@ class _PhotoPreviewState extends State<PhotoPreview> {
   bool horizontalScrolling;
   double opacity = 0.5;
   double _deltaY = 0;
+  int _index;
 
   initState() {
     super.initState();
@@ -46,7 +52,9 @@ class _PhotoPreviewState extends State<PhotoPreview> {
       var index = widget.list.indexOf(v);
       return BigImage(entity: widget.list[index]);
     }).toList();
-    _pageController = PageController(initialPage: widget.initialPage);
+    _pageController = PageController(
+        initialPage: widget.initialPage, viewportFraction: 0.9999);
+    _index = widget.initialPage;
   }
 
   void dispose() {
@@ -64,13 +72,16 @@ class _PhotoPreviewState extends State<PhotoPreview> {
     var child = _list[index];
     return CustomDraggable(
         feedback: child,
+        getRect: () {
+          return widget.getRect(_index);
+        },
         onVerticalDragUpdate: (_) {
-          _deltaY += _.primaryDelta;
+          _deltaY += _.delta.dy;
           setState(() {});
         },
-        onVerticalDragEnd: (_) {
+        onEnd: () {
           _deltaY = 0;
-          widget.exitPreview(_);
+          widget.exitPreview();
         });
   }
 
@@ -83,7 +94,9 @@ class _PhotoPreviewState extends State<PhotoPreview> {
         Container(color: Color.fromARGB((alpha * 255).toInt(), 0, 0, 0)),
         PageView.builder(
             controller: _pageController,
-            onPageChanged: (_) {},
+            onPageChanged: (_) {
+              _index = _;
+            },
             itemBuilder: previewItem,
             itemCount: widget.list.length,
             dragStartBehavior: DragStartBehavior.start)

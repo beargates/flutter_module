@@ -71,6 +71,7 @@ class _PhotoPreviewState extends State<PhotoPreview> {
   Widget previewItem(ctx, index) {
     var child = _list[index];
     return CustomDraggable(
+        initialPage: widget.initialPage == index,
         feedback: child,
         getRect: () {
           return widget.getRect(_index);
@@ -91,7 +92,7 @@ class _PhotoPreviewState extends State<PhotoPreview> {
     alpha = math.max(0, alpha);
     return Stack(
       children: [
-        Container(color: Color.fromARGB((alpha * 255).toInt(), 0, 0, 0)),
+        Container(color: Color.fromARGB((0 * 255).toInt(), 0, 0, 0)),
         PageView.builder(
             controller: _pageController,
             onPageChanged: (_) {

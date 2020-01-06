@@ -5,9 +5,10 @@ import 'package:flutter/material.dart';
 
 import '../../utils/rect.dart';
 
-const Duration _endDuration = Duration(milliseconds: 260);
+const Duration _endDuration = Duration(milliseconds: 3000);
 
 class CustomDraggable extends StatefulWidget {
+  final bool initialPage;
   final Widget feedback;
   final double opacity;
   final Function getRect;
@@ -16,6 +17,7 @@ class CustomDraggable extends StatefulWidget {
   final Function onEnd;
 
   CustomDraggable({
+    @required this.initialPage,
     @required this.feedback,
     this.opacity = 1,
     this.getRect,
@@ -35,16 +37,46 @@ class _CustomDraggableState extends State<CustomDraggable>
   Offset _delta = Offset.zero;
   Offset _lastDelta = Offset.zero;
   double _scale = 1;
-  bool _ending = false;
+  bool _animating = false;
   bool _canceling = false;
   List<double> _deltaYTmp = [];
+  bool show = false;
 
   static final double screenHeight =
       window.physicalSize.height / window.devicePixelRatio;
 
-  get dragItemRect {
+  Rect get dragItemRect {
     var cur = _dragItemKey.currentContext.findRenderObject();
     return getRect(cur);
+  }
+
+  initState() {
+    super.initState();
+
+    _endController = AnimationController(duration: _endDuration, vsync: this);
+
+    /// 0s延迟模拟didMount效果
+    if (widget.initialPage) {
+      Future.delayed(Duration(milliseconds: 1000)).then((_) {
+        Rect _source = widget.getRect();
+        Rect _target = dragItemRect;
+        Rect source = Rect.fromLTWH(
+          _source.left + _source.width / 2 - _target.width / 2 - _target.left,
+          _source.top + _source.height / 2 - _target.height / 2 - _target.top,
+          _target.width,
+          _target.height,
+        );
+        _delta = Offset(source.left - _target.left, source.top - _target.top);
+        _scale = math.max(
+            _source.width / source.width, _source.height / source.height);
+
+        _canceling = true;
+        show = true;
+        animate(source, _target.translate(_delta.dx, _delta.dy));
+      });
+    } else {
+      show = true;
+    }
   }
 
   dispose() {
@@ -71,7 +103,6 @@ class _CustomDraggableState extends State<CustomDraggable>
   }
 
   _end(_) {
-    _ending = true;
     _canceling = false;
 
     /// 取消动作判定
@@ -88,18 +119,19 @@ class _CustomDraggableState extends State<CustomDraggable>
     } else {
       target = widget.getRect();
     }
-    animateTo(target);
+    animate(dragItemRect, target);
   }
 
-  animateTo(Rect target) {
-    var source = dragItemRect;
-    _endController = AnimationController(duration: _endDuration, vsync: this);
+  animate(Rect source, Rect target) {
+    _animating = true;
+
     var startX = _delta.dx;
     var startY = _delta.dy;
     var targetX =
         target.left + target.width / 2 - source.width / 2 - source.left;
     var targetY =
         target.top + target.height / 2 - source.height / 2 - source.top;
+    _endController.reset();
     _endAnimation = RectTween(
         begin: Rect.fromLTWH(
           startX,
@@ -140,7 +172,7 @@ class _CustomDraggableState extends State<CustomDraggable>
       _delta = Offset.zero;
       _deltaYTmp = [];
       _scale = 1;
-      _ending = false;
+      _animating = false;
       _canceling = false;
     }
   }
@@ -150,22 +182,25 @@ class _CustomDraggableState extends State<CustomDraggable>
   Widget build(ctx) {
     var offset = _delta;
     var scale = _scale;
-    if (_ending) {
+    if (_animating) {
       var rect = _endAnimation?.value;
       offset = Offset(rect.left, rect.top);
       var scaleX = rect.width / dragItemRect.width;
       var scaleY = rect.height / dragItemRect.height;
       scale = math.max(scaleX, scaleY);
     }
-    return GestureDetector(
-        onPanUpdate: _move,
-        onPanEnd: _end,
-        child: RepaintBoundary(
-            child: Center(
-                child: Transform.translate(
-                    key: _dragItemKey,
-                    offset: offset,
-                    child: Transform.scale(
-                        scale: scale, child: widget.feedback)))));
+    return Opacity(
+      opacity: show ? 1 : 0,
+      child: GestureDetector(
+          onPanUpdate: _move,
+          onPanEnd: _end,
+          child: RepaintBoundary(
+              child: Center(
+                  child: Transform.translate(
+                      key: _dragItemKey,
+                      offset: offset,
+                      child: Transform.scale(
+                          scale: scale, child: widget.feedback))))),
+    );
   }
 }

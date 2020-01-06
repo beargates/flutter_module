@@ -62,11 +62,11 @@ class _PhotoLibraryState extends State<PhotoLibrary> {
             return Stack(
               children: [
                 Container(
-                    padding: EdgeInsets.symmetric(horizontal: 4),
+                    padding: EdgeInsets.symmetric(horizontal: 1),
                     child: GridView.count(
                         crossAxisCount: 4,
                         children: List.from(snapshot.data.map((_) => Container(
-                            padding: EdgeInsets.all(4),
+                            padding: EdgeInsets.all(1),
                             child: GestureDetector(
                                 onTap: () {
                                   var index = snapshot.data.indexOf(_);

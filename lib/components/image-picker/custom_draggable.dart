@@ -58,12 +58,8 @@ class _CustomDraggableState extends State<CustomDraggable>
     var deltaX = source.width * (1 - _scale) / 2 + _delta.dx;
     var deltaY = source.height * (1 - _scale) / 2 + _delta.dy;
     var top = source.top + deltaY;
-    var bottom = top + source.height / 2;
     var left = source.left + deltaX;
-    var right = left + source.width / 2;
-    return math.max(
-        math.max(target.top - top, target.top + target.height - bottom),
-        math.max(target.left - left, target.left + target.width - right));
+    return math.max(target.top - top, target.left - left);
   }
 
   _move(_) {
@@ -106,7 +102,8 @@ class _CustomDraggableState extends State<CustomDraggable>
   animateTo(Rect target) {
     var source = dragItemRect;
     _endController = AnimationController(
-        duration: _endDuration * (getLongestDuration(source, target) / 200),
+        duration:
+            _endDuration * (getLongestDuration(source, target) / 200).abs(),
         vsync: this);
     _endAnimation = RectTween(
         begin: Rect.fromLTWH(
@@ -129,6 +126,7 @@ class _CustomDraggableState extends State<CustomDraggable>
 
   animUpdate(Rect start) {
     setState(() {});
+
     /// 下滑退出预览的流程是下滑+松手后返回图片位置动画两个过程，_canceling表示的是松手后
     /// 的过程，所以需要处理delta，以保证松手后的delta仍是增长状态
     var deltaY = _endAnimation?.value?.top ?? 0;

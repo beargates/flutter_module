@@ -76,7 +76,6 @@ class _PhotoPreviewState extends State<PhotoPreview> {
           return widget.getRect(_index);
         },
         onPanUpdate: (_) {
-          /// todo 由于deltaY引起的退出预览时，黑色背景闪动的bug
           _deltaY = _.toDouble();
           setState(() {});
         },

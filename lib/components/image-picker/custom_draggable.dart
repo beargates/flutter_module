@@ -5,13 +5,14 @@ import 'package:flutter/material.dart';
 
 import '../../utils/rect.dart';
 
-const Duration _endDuration = Duration(milliseconds: 2000);
+const Duration _endDuration = Duration(milliseconds: 300);
 
 class CustomDraggable extends StatefulWidget {
   final Widget feedback;
   final double opacity;
   final Function getRect;
   final Function onPanUpdate;
+  final Function onAnimate;
   final Function onEnd;
 
   CustomDraggable({
@@ -19,6 +20,7 @@ class CustomDraggable extends StatefulWidget {
     this.opacity = 1,
     this.getRect,
     this.onPanUpdate,
+    this.onAnimate,
     this.onEnd,
   });
 
@@ -34,6 +36,8 @@ class _CustomDraggableState extends State<CustomDraggable>
   Offset _lastDelta = Offset.zero;
   double _scale = 1;
   bool _ending = false;
+  bool _canceling = false;
+  List<double> _deltaYTmp = [];
 
   static final double screenHeight =
       window.physicalSize.height / window.devicePixelRatio;
@@ -41,6 +45,12 @@ class _CustomDraggableState extends State<CustomDraggable>
   get dragItemRect {
     var cur = _dragItemKey.currentContext.findRenderObject();
     return getRect(cur);
+  }
+
+  dispose() {
+    super.dispose();
+
+    _endController?.dispose();
   }
 
   /// 获取四边中位移最长的一个
@@ -62,19 +72,35 @@ class _CustomDraggableState extends State<CustomDraggable>
     _scale = 1 - _delta.dy / screenHeight / 1.5;
     _scale = math.min(1, _scale);
 
+    if (_lastDelta.dy < 0) {
+      _deltaYTmp.add(_lastDelta.dy);
+    } else {
+      _deltaYTmp = [];
+    }
+
     setState(() {});
     widget.onPanUpdate(_delta.dy);
   }
 
   _end(_) {
     _ending = true;
+    _canceling = false;
 
-    if (_lastDelta.dy >= -1) {
-      var target = widget.getRect();
-      animateTo(target);
-    } else {
-      animateTo(dragItemRect);
+    /// 取消动作判定
+    var cancel = _deltaYTmp.length >= 3;
+    if (cancel) {
+      var totalDeltaY = _deltaYTmp.reduce((pre, after) => pre + after);
+      cancel = cancel && totalDeltaY.abs() > 10;
     }
+
+    Rect target;
+    if (cancel) {
+      target = dragItemRect;
+      _canceling = true;
+    } else {
+      target = widget.getRect();
+    }
+    animateTo(target);
   }
 
   animateTo(Rect target) {
@@ -96,26 +122,33 @@ class _CustomDraggableState extends State<CustomDraggable>
           target.height,
         )).animate(_endController);
     _endAnimation
-      ..addListener(animUpdate)
+      ..addListener(() => animUpdate(dragItemRect))
       ..addStatusListener(endAnimationStatusCallback);
     _endController.forward();
   }
 
-  animUpdate() {
+  animUpdate(Rect start) {
     setState(() {});
-    widget.onPanUpdate(_endAnimation?.value?.top ?? 0);
+    /// 下滑退出预览的流程是下滑+松手后返回图片位置动画两个过程，_canceling表示的是松手后
+    /// 的过程，所以需要处理delta，以保证松手后的delta仍是增长状态
+    var deltaY = _endAnimation?.value?.top ?? 0;
+    if (!_canceling) {
+      deltaY = 2 * _delta.dy - deltaY;
+    }
+    widget.onPanUpdate(deltaY);
   }
 
   endAnimationStatusCallback(status) {
     if (status == AnimationStatus.completed) {
-      if (_lastDelta.dy >= -1) {
+      if (!_canceling) {
         widget.onEnd();
       }
       _lastDelta = Offset.zero;
       _delta = Offset.zero;
+      _deltaYTmp = [];
       _scale = 1;
       _ending = false;
-      _endController?.dispose();
+      _canceling = false;
     }
   }
 

@@ -15,7 +15,7 @@ class _PhotoLibraryState extends State<PhotoLibrary> {
   List<GlobalKey> _keys;
   Future _thumbList;
   bool showPreview = false;
-  int index = 0;
+  int index;
 
   initState() {
     super.initState();
@@ -33,20 +33,19 @@ class _PhotoLibraryState extends State<PhotoLibrary> {
   /// 打开预览
   void enterPreview(i) {
     index = i;
-    setState(() {
-      showPreview = true;
-    });
+    showPreview = true;
+    setState(() {});
   }
 
   /// 退出预览
   void exitPreview() {
-    setState(() {
-      showPreview = false;
-    });
+    index = null;
+    showPreview = false;
+    setState(() {});
   }
 
   Rect getCellRect(int index) {
-    assert(index >=0 && index <= list.length - 1);
+    assert(index >= 0 && index <= list.length - 1);
     var renderObject = _keys[index].currentContext.findRenderObject();
     return getRect(renderObject);
   }
@@ -65,16 +64,18 @@ class _PhotoLibraryState extends State<PhotoLibrary> {
                     padding: EdgeInsets.symmetric(horizontal: 1),
                     child: GridView.count(
                         crossAxisCount: 4,
-                        children: List.from(snapshot.data.map((_) => Container(
-                            padding: EdgeInsets.all(1),
-                            child: GestureDetector(
-                                onTap: () {
-                                  var index = snapshot.data.indexOf(_);
-                                  enterPreview(index);
-                                },
-                                child: Image.memory(_,
-                                    key: _keys[snapshot.data.indexOf(_)],
-                                    fit: BoxFit.cover))))))),
+                        children: List.from(snapshot.data.map((_) => Opacity(
+                            opacity: snapshot.data.indexOf(_) == index ? 0 : 1,
+                            child: Container(
+                                padding: EdgeInsets.all(1),
+                                child: GestureDetector(
+                                    onTap: () {
+                                      var index = snapshot.data.indexOf(_);
+                                      enterPreview(index);
+                                    },
+                                    child: Image.memory(_,
+                                        key: _keys[snapshot.data.indexOf(_)],
+                                        fit: BoxFit.cover)))))))),
                 Visibility(
                     visible: showPreview,
                     child: PhotoPreview(

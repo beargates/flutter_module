@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 
 import '../../utils/rect.dart';
 
-const Duration _endDuration = Duration(milliseconds: 300);
+const Duration _endDuration = Duration(milliseconds: 260);
 
 class CustomDraggable extends StatefulWidget {
   final Widget feedback;
@@ -53,20 +53,12 @@ class _CustomDraggableState extends State<CustomDraggable>
     _endController?.dispose();
   }
 
-  /// 获取四边中位移最长的一个
-  double getLongestDuration(Rect source, Rect target) {
-    var deltaX = source.width * (1 - _scale) / 2 + _delta.dx;
-    var deltaY = source.height * (1 - _scale) / 2 + _delta.dy;
-    var top = source.top + deltaY;
-    var left = source.left + deltaX;
-    return math.max(target.top - top, target.left - left);
-  }
-
   _move(_) {
     _lastDelta = _.delta;
     _delta += _lastDelta;
     _scale = 1 - _delta.dy / screenHeight / 1.5;
     _scale = math.min(1, _scale);
+    _scale = math.max(0.8, _scale); // 最小不会超过0.8
 
     if (_lastDelta.dy < 0) {
       _deltaYTmp.add(_lastDelta.dy);
@@ -101,37 +93,40 @@ class _CustomDraggableState extends State<CustomDraggable>
 
   animateTo(Rect target) {
     var source = dragItemRect;
-    _endController = AnimationController(
-        duration:
-            _endDuration * (getLongestDuration(source, target) / 200).abs(),
-        vsync: this);
+    _endController = AnimationController(duration: _endDuration, vsync: this);
+    var startX = _delta.dx;
+    var startY = _delta.dy;
+    var targetX =
+        target.left + target.width / 2 - source.width / 2 - source.left;
+    var targetY =
+        target.top + target.height / 2 - source.height / 2 - source.top;
     _endAnimation = RectTween(
         begin: Rect.fromLTWH(
-          _delta.dx,
-          _delta.dy,
+          startX,
+          startY,
           source.width * _scale,
           source.height * _scale,
         ),
         end: Rect.fromLTWH(
-          target.left + target.width / 2 - source.width / 2 - source.left,
-          target.top + target.height / 2 - source.height / 2 - source.top,
+          targetX,
+          targetY,
           target.width,
           target.height,
         )).animate(_endController);
     _endAnimation
-      ..addListener(() => animUpdate(dragItemRect))
+      ..addListener(() => animUpdate((targetY - startY).abs()))
       ..addStatusListener(endAnimationStatusCallback);
     _endController.forward();
   }
 
-  animUpdate(Rect start) {
+  animUpdate(double total) {
     setState(() {});
 
     /// 下滑退出预览的流程是下滑+松手后返回图片位置动画两个过程，_canceling表示的是松手后
     /// 的过程，所以需要处理delta，以保证松手后的delta仍是增长状态
     var deltaY = _endAnimation?.value?.top ?? 0;
     if (!_canceling) {
-      deltaY = 2 * _delta.dy - deltaY;
+      deltaY = _delta.dy + _endController.value * total;
     }
     widget.onPanUpdate(deltaY);
   }
@@ -158,7 +153,9 @@ class _CustomDraggableState extends State<CustomDraggable>
     if (_ending) {
       var rect = _endAnimation?.value;
       offset = Offset(rect.left, rect.top);
-      scale = rect.height / dragItemRect.height;
+      var scaleX = rect.width / dragItemRect.width;
+      var scaleY = rect.height / dragItemRect.height;
+      scale = math.max(scaleX, scaleY);
     }
     return GestureDetector(
         onPanUpdate: _move,

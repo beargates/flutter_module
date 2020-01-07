@@ -3,12 +3,15 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+import 'package:photo_manager/photo_manager.dart';
+
 import '../../utils/rect.dart';
 
-const Duration _endDuration = Duration(milliseconds: 260);
+const Duration _endDuration = Duration(milliseconds: 300);
 
 class CustomDraggable extends StatefulWidget {
   final bool initialPage;
+  final AssetEntity img;
   final Widget feedback;
   final double opacity;
   final Function getRect;
@@ -18,6 +21,7 @@ class CustomDraggable extends StatefulWidget {
 
   CustomDraggable({
     @required this.initialPage,
+    @required this.img,
     @required this.feedback,
     this.opacity = 1,
     this.getRect,
@@ -50,6 +54,8 @@ class _CustomDraggableState extends State<CustomDraggable>
     return getRect(cur);
   }
 
+  AssetEntity get img => widget.img;
+
   initState() {
     super.initState();
 
@@ -57,7 +63,7 @@ class _CustomDraggableState extends State<CustomDraggable>
 
     /// 0s延迟模拟didMount效果
     if (widget.initialPage) {
-      Future.delayed(Duration(milliseconds: 1000)).then((_) {
+      Future.delayed(Duration.zero).then((_) {
         Rect _source = widget.getRect();
         _delta = _source.center - originRect.center;
         _scale = math.max(_source.width / originRect.width,
@@ -66,11 +72,15 @@ class _CustomDraggableState extends State<CustomDraggable>
         _canceling = true;
         show = true;
 
+        double ratio = 1;
+        if (img.width > img.height) {
+          ratio = img.width / img.height;
+        }
         var source = Rect.fromLTWH(
           _delta.dx,
           _delta.dy,
-          originRect.width * _scale,
-          originRect.height * _scale,
+          originRect.width * _scale * ratio,
+          originRect.height * _scale * ratio,
         );
         animate(source, originRect);
       });
@@ -117,7 +127,17 @@ class _CustomDraggableState extends State<CustomDraggable>
       target = originRect;
       _canceling = true;
     } else {
+      double ratio = 1;
+      if (img.width > img.height) {
+        ratio = img.width / img.height;
+      }
+
       target = widget.getRect();
+      target = Rect.fromLTWH(
+          target.left - target.width * (ratio - 1) / 2,
+          target.top - target.height * (ratio - 1) / 2,
+          target.width * ratio,
+          target.height * ratio);
     }
     var source = Rect.fromLTWH(
       _delta.dx,
@@ -148,6 +168,7 @@ class _CustomDraggableState extends State<CustomDraggable>
       _target.height,
     );
     _endController.reset();
+    _endAnimation?.removeStatusListener(endAnimationStatusCallback);
     _endAnimation =
         RectTween(begin: source, end: target).animate(_endController);
     _endAnimation
@@ -162,10 +183,10 @@ class _CustomDraggableState extends State<CustomDraggable>
     /// 下滑退出预览的流程是下滑+松手后返回图片位置动画两个过程，_canceling表示的是松手后
     /// 的过程，所以需要处理delta，以保证松手后的delta仍是增长状态
     var deltaY = _endAnimation?.value?.top ?? 0;
-    if (!_canceling) {
-      deltaY = _delta.dy + _endController.value * total;
-    }
-    widget.onPanUpdate(deltaY);
+//    if (!_canceling) {
+//      deltaY = _delta.dy + _endController.value * total;
+//    }
+    widget.onPanUpdate(deltaY.abs());
   }
 
   endAnimationStatusCallback(status) {
@@ -189,10 +210,10 @@ class _CustomDraggableState extends State<CustomDraggable>
     var scale = _scale;
     if (_animating) {
       var rect = _endAnimation?.value;
+//      var scaleX = rect.width / originRect.width;
+//      var scaleY = rect.height / originRect.height;
       offset = Offset(rect.left, rect.top);
-      var scaleX = rect.width / originRect.width;
-      var scaleY = rect.height / originRect.height;
-      scale = math.max(scaleX, scaleY);
+      scale = rect.width / originRect.width;
     }
     return Opacity(
         opacity: show ? 1 : 0,
@@ -205,6 +226,8 @@ class _CustomDraggableState extends State<CustomDraggable>
                         key: _dragItemKey,
                         offset: offset,
                         child: Transform.scale(
-                            scale: scale, child: widget.feedback))))));
+                            scale: scale,
+                            child:
+                                SizedBox.expand(child: widget.feedback)))))));
   }
 }

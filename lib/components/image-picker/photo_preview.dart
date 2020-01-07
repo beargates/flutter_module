@@ -50,7 +50,10 @@ class _PhotoPreviewState extends State<PhotoPreview> {
     horizontalScrolling = false;
     _list = widget.list.map((v) {
       var index = widget.list.indexOf(v);
-      return BigImage(entity: widget.list[index]);
+      return BigImage(
+          entity: widget.list[index],
+          width: screenWidth.floor(),
+          height: screenHeight.floor());
     }).toList();
     _pageController = PageController(
         initialPage: widget.initialPage, viewportFraction: 0.9999);
@@ -72,6 +75,7 @@ class _PhotoPreviewState extends State<PhotoPreview> {
     var child = _list[index];
     return CustomDraggable(
         initialPage: widget.initialPage == index,
+        img: widget.list[index],
         feedback: child,
         getRect: () {
           return widget.getRect(_index);
@@ -112,8 +116,10 @@ class _PhotoPreviewState extends State<PhotoPreview> {
 
 class BigImage extends StatefulWidget {
   final AssetEntity entity;
+  final int width;
+  final int height;
 
-  BigImage({Key key, this.entity}) : super(key: key);
+  BigImage({Key key, this.entity, this.width, this.height}) : super(key: key);
 
   _BigImageState createState() => _BigImageState();
 }
@@ -125,11 +131,14 @@ class _BigImageState extends State<BigImage>
   Widget build(BuildContext context) {
     super.build(context);
     return FutureBuilder(
-      future: widget.entity.fullData,
+      future: widget.entity.thumbDataWithSize(widget.width, widget.height),
       builder: (ctx, snapshot) {
         var data = snapshot.data;
         if (snapshot.connectionState == ConnectionState.done && data != null) {
-          return Image.memory(data, fit: BoxFit.contain);
+          return Image.memory(data,
+              fit: BoxFit.contain,
+              width: widget.width.toDouble(),
+              height: widget.height.toDouble());
         }
         return Container();
       },

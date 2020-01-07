@@ -16,6 +16,7 @@ class _PhotoLibraryState extends State<PhotoLibrary> {
   Future _thumbList;
   bool showPreview = false;
   int index;
+  int hideIndex;
 
   initState() {
     super.initState();
@@ -35,11 +36,18 @@ class _PhotoLibraryState extends State<PhotoLibrary> {
     index = i;
     showPreview = true;
     setState(() {});
+    Future.delayed(Duration(milliseconds: 600)).then((_) {
+      if (showPreview) {
+        hideIndex = i;
+        setState(() {});
+      }
+    });
   }
 
   /// 退出预览
   void exitPreview() {
     index = null;
+    hideIndex = null;
     showPreview = false;
     setState(() {});
   }
@@ -65,7 +73,8 @@ class _PhotoLibraryState extends State<PhotoLibrary> {
                     child: GridView.count(
                         crossAxisCount: 4,
                         children: List.from(snapshot.data.map((_) => Opacity(
-                            opacity: snapshot.data.indexOf(_) == index ? 0 : 1,
+                            opacity:
+                                snapshot.data.indexOf(_) == hideIndex ? 0 : 1,
                             child: Container(
                                 padding: EdgeInsets.all(1),
                                 child: GestureDetector(

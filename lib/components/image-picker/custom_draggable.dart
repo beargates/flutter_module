@@ -181,7 +181,13 @@ class _CustomDraggableState extends State<CustomDraggable>
     setState(() {});
 
     var deltaY = _endAnimation.value.top;
-    widget.onPanUpdate(_canceling ? deltaY : deltaY.abs());
+    /// 下滑退出预览的流程是下滑+松手后返回图片位置动画两个过程，_canceling表示的是松手后
+    /// 的过程，所以需要处理delta，以保证松手后的delta仍是增长状态
+    if (!_canceling) {
+      deltaY = _delta.dy + _endController.value * total;
+    }
+    print(deltaY.abs());
+    widget.onPanUpdate(deltaY.abs());
   }
 
   endAnimationStatusCallback(status) {

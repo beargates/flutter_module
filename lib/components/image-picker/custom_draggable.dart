@@ -41,6 +41,7 @@ class _CustomDraggableState extends State<CustomDraggable>
   Offset _delta = Offset.zero;
   Offset _lastDelta = Offset.zero;
   double _scale = 1;
+  bool _entering = false;
   bool _animating = false;
   bool _canceling = false;
   List<double> _deltaYTmp = [];
@@ -63,12 +64,14 @@ class _CustomDraggableState extends State<CustomDraggable>
 
     /// 0s延迟模拟didMount效果
     if (widget.initialPage) {
+      /// 入场时，假设先有一个从中间到入场位置的位移，执行'取消'，完成入场动作
       Future.delayed(Duration.zero).then((_) {
         Rect _source = widget.getRect();
         _delta = _source.center - originRect.center;
         _scale = math.max(_source.width / originRect.width,
             _source.height / originRect.height);
 
+        _entering = true;
         _canceling = true;
         show = true;
 
@@ -181,12 +184,15 @@ class _CustomDraggableState extends State<CustomDraggable>
     setState(() {});
 
     var deltaY = _endAnimation.value.top;
+
     /// 下滑退出预览的流程是下滑+松手后返回图片位置动画两个过程，_canceling表示的是松手后
     /// 的过程，所以需要处理delta，以保证松手后的delta仍是增长状态
     if (!_canceling) {
       deltaY = _delta.dy + _endController.value * total;
     }
-    print(deltaY.abs());
+    if (!_entering) {
+      deltaY = math.max(0, deltaY);
+    }
     widget.onPanUpdate(deltaY.abs());
   }
 
@@ -199,6 +205,7 @@ class _CustomDraggableState extends State<CustomDraggable>
       _delta = Offset.zero;
       _deltaYTmp = [];
       _scale = 1;
+      _entering = false;
       _animating = false;
       _canceling = false;
     }

@@ -41,6 +41,9 @@ class _CustomDraggableState extends State<CustomDraggable>
   Offset _delta = Offset.zero;
   Offset _lastDelta = Offset.zero;
   double _scale = 1;
+  bool _panning = false;
+  bool _scaling = false;
+  Offset _lastFocalPoint = Offset.zero;
   bool _entering = false;
   bool _animating = false;
   bool _canceling = false;
@@ -98,8 +101,8 @@ class _CustomDraggableState extends State<CustomDraggable>
     _endController?.dispose();
   }
 
-  _move(_) {
-    _lastDelta = _.delta;
+  _panUpdate(delta) {
+    _lastDelta = delta;
     _delta += _lastDelta;
     _scale = 1 - _delta.dy / screenHeight / 1.5;
     _scale = math.min(1, _scale);
@@ -115,7 +118,7 @@ class _CustomDraggableState extends State<CustomDraggable>
     widget.onPanUpdate(_delta.dy);
   }
 
-  _end(_) {
+  _panEnd(_) {
     _canceling = false;
 
     /// 取消动作判定
@@ -211,6 +214,45 @@ class _CustomDraggableState extends State<CustomDraggable>
     }
   }
 
+  _scaleUpdate(_) {
+    print(_.scale);
+  }
+
+  _scaleEnd(_) {}
+
+  _start(_) {
+    _lastFocalPoint = _.focalPoint;
+  }
+
+  _update(_) {
+    if (!_panning || !_scaling) {
+      if (_.scale == 1) {
+        if (!_panning) {
+          _panning = true;
+        }
+        var delta = _.focalPoint - _lastFocalPoint;
+        _panUpdate(delta);
+        _lastFocalPoint = _.focalPoint;
+      } else {
+        if (!_scaling) {
+          _scaling = true;
+        }
+        _scaleUpdate(_);
+      }
+    }
+  }
+
+  _end(_) {
+    if (_scaling) {
+      _scaleEnd(null);
+    } else {
+      _panEnd(null);
+    }
+    _panning = false;
+    _scaling = false;
+    _lastFocalPoint = Offset.zero;
+  }
+
   final GlobalKey _dragItemKey = GlobalKey();
 
   Widget build(ctx) {
@@ -226,8 +268,9 @@ class _CustomDraggableState extends State<CustomDraggable>
     return Opacity(
         opacity: show ? 1 : 0,
         child: GestureDetector(
-            onPanUpdate: _move,
-            onPanEnd: _end,
+            onScaleStart: _start,
+            onScaleUpdate: _update,
+            onScaleEnd: _end,
             child: RepaintBoundary(
                 child: Center(
                     child: Transform.translate(

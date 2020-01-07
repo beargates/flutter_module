@@ -41,7 +41,7 @@ class _PhotoPreviewState extends State<PhotoPreview> {
   OverlayEntry overlayEntry;
   bool horizontalScrolling;
   double opacity = 0.5;
-  double _deltaY = 0;
+  double _deltaY;
   int _index;
 
   initState() {
@@ -81,15 +81,19 @@ class _PhotoPreviewState extends State<PhotoPreview> {
           setState(() {});
         },
         onEnd: () {
-          _deltaY = 0;
+          _deltaY = null;
           widget.exitPreview();
         });
   }
 
   Widget build(BuildContext context) {
-    var validDis = math.max(0, _deltaY);
-    var alpha = (1 - validDis / screenHeight * 5);
-    alpha = math.max(0, alpha);
+    double alpha = 0;
+    if (_deltaY != null) {
+      var validDis = math.max(0, _deltaY);
+      alpha = (1 - validDis / screenHeight * 5);
+      alpha = math.max(0, alpha);
+    }
+
     return Stack(
       children: [
         Container(color: Color.fromARGB((alpha * 255).toInt(), 0, 0, 0)),

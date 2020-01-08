@@ -40,10 +40,12 @@ class _CustomDraggableState extends State<CustomDraggable>
 
   Offset _delta = Offset.zero;
   Offset _lastDelta = Offset.zero;
-  double _scale = 1;
+  double _scale = 1; // pan手势产生的缩放值
   bool _panning = false;
-  bool _scaling = false;
+  bool _zooming = false;
   Offset _lastFocalPoint = Offset.zero;
+  double _zoom = 1; // scale手势产生的缩放值
+  double _tmpZoom = 1; // 一次缩放操作最终的缩放值
   bool _entering = false;
   bool _animating = false;
   bool _canceling = false;
@@ -215,17 +217,28 @@ class _CustomDraggableState extends State<CustomDraggable>
   }
 
   _scaleUpdate(_) {
-    print(_.scale);
+    _tmpZoom = _zoom * _.scale;
+    setState(() {});
   }
 
-  _scaleEnd(_) {}
+  _scaleEnd(_) {
+    _zoom = _tmpZoom;
+    if (_zoom <= 1) {
+      _zooming = false;
+      _tmpZoom = 1;
+      _zoom = 1;
+      setState(() {});
+    }
+  }
 
+  /// 手势控制器
   _start(_) {
     _lastFocalPoint = _.focalPoint;
   }
 
+  /// 手势控制器
   _update(_) {
-    if (!_panning || !_scaling) {
+    if (!_panning || !_zooming) {
       if (_.scale == 1) {
         if (!_panning) {
           _panning = true;
@@ -234,22 +247,22 @@ class _CustomDraggableState extends State<CustomDraggable>
         _panUpdate(delta);
         _lastFocalPoint = _.focalPoint;
       } else {
-        if (!_scaling) {
-          _scaling = true;
+        if (!_zooming) {
+          _zooming = true;
         }
         _scaleUpdate(_);
       }
     }
   }
 
+  /// 手势控制器
   _end(_) {
-    if (_scaling) {
-      _scaleEnd(null);
+    if (_zooming) {
+      _scaleEnd(_);
     } else {
       _panEnd(null);
     }
     _panning = false;
-    _scaling = false;
     _lastFocalPoint = Offset.zero;
   }
 
@@ -277,7 +290,7 @@ class _CustomDraggableState extends State<CustomDraggable>
                         key: _dragItemKey,
                         offset: offset,
                         child: Transform.scale(
-                            scale: scale,
+                            scale: scale * _tmpZoom,
                             child:
                                 SizedBox.expand(child: widget.feedback)))))));
   }

@@ -51,6 +51,8 @@ class _PreviewItemState extends State<PreviewItem>
   List<double> _deltaYTmp = [];
   bool show = false;
 
+  static final double screenWidth =
+      window.physicalSize.width / window.devicePixelRatio;
   static final double screenHeight =
       window.physicalSize.height / window.devicePixelRatio;
 
@@ -259,15 +261,18 @@ class _PreviewItemState extends State<PreviewItem>
             onScaleStart: _scaleStart,
             onScaleUpdate: _scaleUpdate,
             onScaleEnd: _scaleEnd,
-            child: RepaintBoundary(
-                child: Center(
-                    child: Transform.translate(
-                        key: _dragItemKey,
-                        offset: offset,
-                        child: Transform.scale(
-                            scale: scale * zoom,
-                            child:
-                                SizedBox.expand(child: widget.feedback)))))));
+            child: Container(
+                width: screenWidth,
+                height: screenHeight,
+                color: Color.fromARGB(0, 255, 255, 255), // 有颜色才能全屏拖动，什么鬼？
+                child: RepaintBoundary(
+                    child: Center(
+                        child: Transform.translate(
+                            key: _dragItemKey,
+                            offset: offset,
+                            child: Transform.scale(
+                                scale: scale * zoom,
+                                child: widget.feedback)))))));
   }
 }
 
@@ -337,6 +342,7 @@ class __GestureDetectorState extends State<_GestureDetector> {
   }
 
   /// 手势控制器
+  /// bug: end触发两次
   _end(_) {
     if (_zooming) {
       _zoom = _tmpZoom;

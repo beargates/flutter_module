@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import 'home/index.dart';
-import 'components/image-picker/image_picker.dart';
 import 'mine/base_info.dart';
 
 void main() => runApp(new App());
@@ -25,7 +24,6 @@ class App extends StatelessWidget {
       ),
       home: Home(),
       routes: {
-        "/test": (_) => MyHomePage(),
         "/base_info": (_) => BaseInfo(),
       },
     );

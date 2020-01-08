@@ -7,7 +7,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:photo_manager/photo_manager.dart';
 
-import '../image-picker/custom_draggable.dart';
+import '../image-picker/photo_preview_item.dart';
 
 class PhotoPreview extends StatefulWidget {
   final List<AssetEntity> list;

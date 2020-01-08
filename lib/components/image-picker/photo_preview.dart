@@ -28,6 +28,7 @@ class _PhotoPreviewState extends State<PhotoPreview> {
   bool showPreview = false;
   bool dragging = false;
   bool showLayer = false;
+  bool _scaling = false; // 缩放时禁用page的滚动
 
   double pageViewHeight;
 
@@ -80,6 +81,10 @@ class _PhotoPreviewState extends State<PhotoPreview> {
         getRect: () {
           return widget.getRect(_index);
         },
+        onScaleStatusChange: (scaling) {
+          _scaling = scaling;
+          setState(() {});
+        },
         onPanUpdate: (_) {
           _deltaY = _.toDouble();
           setState(() {});
@@ -102,6 +107,7 @@ class _PhotoPreviewState extends State<PhotoPreview> {
       children: [
         Container(color: Color.fromARGB((alpha * 255).toInt(), 0, 0, 0)),
         PageView.builder(
+            physics: _scaling ? NeverScrollableScrollPhysics() : null,
             controller: _pageController,
             onPageChanged: (_) {
               _index = _;

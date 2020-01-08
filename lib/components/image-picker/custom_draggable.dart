@@ -18,6 +18,7 @@ class CustomDraggable extends StatefulWidget {
   final Function onPanUpdate;
   final Function onAnimate;
   final Function onEnd;
+  final Function onScaleStatusChange;
 
   CustomDraggable({
     @required this.initialPage,
@@ -28,6 +29,7 @@ class CustomDraggable extends StatefulWidget {
     this.onPanUpdate,
     this.onAnimate,
     this.onEnd,
+    this.onScaleStatusChange,
   });
 
   _CustomDraggableState createState() => _CustomDraggableState();
@@ -42,6 +44,7 @@ class _CustomDraggableState extends State<CustomDraggable>
   Offset _lastDelta = Offset.zero;
   double _scale = 1; // pan手势产生的缩放值
   double zoom = 1;
+  bool _zooming = false;
   bool _entering = false;
   bool _animating = false;
   bool _canceling = false;
@@ -102,21 +105,27 @@ class _CustomDraggableState extends State<CustomDraggable>
   _panUpdate(delta) {
     _lastDelta = delta;
     _delta += _lastDelta;
-    _scale = 1 - _delta.dy / screenHeight / 1.5;
-    _scale = math.min(1, _scale);
-    _scale = math.max(0.8, _scale); // 最小不会超过0.8
 
-    if (_lastDelta.dy < 0) {
-      _deltaYTmp.add(_lastDelta.dy);
-    } else {
-      _deltaYTmp = [];
+    if (!_zooming) {
+      _scale = 1 - _delta.dy / screenHeight / 1.5;
+      _scale = math.min(1, _scale);
+      _scale = math.max(0.8, _scale); // 最小不会超过0.8
+
+      /// 用于判定取消动作
+      if (_lastDelta.dy < 0) {
+        _deltaYTmp.add(_lastDelta.dy);
+      } else {
+        _deltaYTmp = [];
+      }
+
+      widget.onPanUpdate(_delta.dy);
     }
 
     setState(() {});
-    widget.onPanUpdate(_delta.dy);
   }
 
   _panEnd(_) {
+    if (_zooming) return;
     _canceling = false;
 
     /// 取消动作判定
@@ -212,14 +221,22 @@ class _CustomDraggableState extends State<CustomDraggable>
     }
   }
 
+  _scaleStart() {
+    widget.onScaleStatusChange(true);
+  }
+
   _scaleUpdate(_) {
     zoom = _;
+    _zooming = true;
     setState(() {});
   }
 
   _scaleEnd(_) {
     zoom = 1;
+    _zooming = false;
+    _delta = Offset.zero;
     setState(() {});
+    widget.onScaleStatusChange(false);
   }
 
   final GlobalKey _dragItemKey = GlobalKey();
@@ -239,6 +256,7 @@ class _CustomDraggableState extends State<CustomDraggable>
         child: _GestureDetector(
             onPanUpdate: _panUpdate,
             onPanEnd: _panEnd,
+            onScaleStart: _scaleStart,
             onScaleUpdate: _scaleUpdate,
             onScaleEnd: _scaleEnd,
             child: RepaintBoundary(
@@ -257,6 +275,7 @@ class _GestureDetector extends StatefulWidget {
   final Widget child;
   final Function onPanUpdate;
   final Function onPanEnd;
+  final Function onScaleStart;
   final Function onScaleUpdate;
   final Function onScaleEnd;
 
@@ -264,6 +283,7 @@ class _GestureDetector extends StatefulWidget {
     this.child,
     this.onPanUpdate,
     this.onPanEnd,
+    this.onScaleStart,
     this.onScaleUpdate,
     this.onScaleEnd,
   });
@@ -277,6 +297,8 @@ class __GestureDetectorState extends State<_GestureDetector> {
   get _panUpdate => widget.onPanUpdate ?? () {};
 
   get _panEnd => widget.onPanEnd ?? () {};
+
+  get _scaleStart => widget.onScaleStart ?? () {};
 
   get _scaleUpdate => widget.onScaleUpdate ?? () {};
 
@@ -295,7 +317,7 @@ class __GestureDetectorState extends State<_GestureDetector> {
   /// 手势控制器
   _update(_) {
     // 处理缩放
-    if (!_zooming && _.scale == 1) {
+    if (_.scale == 1) {
       if (!_panning) {
         _panning = true;
       }
@@ -306,6 +328,7 @@ class __GestureDetectorState extends State<_GestureDetector> {
     // 处理平移
     if (!_panning && _.scale != 1) {
       if (!_zooming) {
+        _scaleStart();
         _zooming = true;
       }
       _tmpZoom = _zoom * _.scale;

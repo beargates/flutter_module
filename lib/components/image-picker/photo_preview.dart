@@ -74,7 +74,7 @@ class _PhotoPreviewState extends State<PhotoPreview> {
 
   Widget previewItem(ctx, index) {
     var child = _list[index];
-    return CustomDraggable(
+    return PreviewItem(
         initialPage: widget.initialPage == index,
         img: widget.list[index],
         feedback: child,

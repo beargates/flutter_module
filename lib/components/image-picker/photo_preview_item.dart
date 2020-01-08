@@ -9,7 +9,7 @@ import '../../utils/rect.dart';
 
 const Duration _endDuration = Duration(milliseconds: 300);
 
-class CustomDraggable extends StatefulWidget {
+class PreviewItem extends StatefulWidget {
   final bool initialPage;
   final AssetEntity img;
   final Widget feedback;
@@ -20,7 +20,7 @@ class CustomDraggable extends StatefulWidget {
   final Function onEnd;
   final Function onScaleStatusChange;
 
-  CustomDraggable({
+  PreviewItem({
     @required this.initialPage,
     @required this.img,
     @required this.feedback,
@@ -32,10 +32,10 @@ class CustomDraggable extends StatefulWidget {
     this.onScaleStatusChange,
   });
 
-  _CustomDraggableState createState() => _CustomDraggableState();
+  _PreviewItemState createState() => _PreviewItemState();
 }
 
-class _CustomDraggableState extends State<CustomDraggable>
+class _PreviewItemState extends State<PreviewItem>
     with TickerProviderStateMixin {
   AnimationController _endController;
   Animation<Rect> _endAnimation;

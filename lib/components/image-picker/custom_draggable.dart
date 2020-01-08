@@ -41,12 +41,7 @@ class _CustomDraggableState extends State<CustomDraggable>
   Offset _delta = Offset.zero;
   Offset _lastDelta = Offset.zero;
   double _scale = 1; // pan手势产生的缩放值
-  bool _panning = false;
-  bool _zooming = false;
-  Offset _lastFocalPoint = Offset.zero;
   double zoom = 1;
-  double _zoom = 1; // 累计缩放量，累计缩放量小于等于1时，退出缩放模式
-  double _tmpZoom = 1; // 一次缩放操作最终的缩放值
   bool _entering = false;
   bool _animating = false;
   bool _canceling = false;
@@ -227,6 +222,71 @@ class _CustomDraggableState extends State<CustomDraggable>
     setState(() {});
   }
 
+  final GlobalKey _dragItemKey = GlobalKey();
+
+  Widget build(ctx) {
+    var offset = _delta;
+    var scale = _scale;
+    if (_animating) {
+      var rect = _endAnimation?.value;
+//      var scaleX = rect.width / originRect.width;
+//      var scaleY = rect.height / originRect.height;
+      offset = Offset(rect.left, rect.top);
+      scale = rect.width / originRect.width;
+    }
+    return Opacity(
+        opacity: show ? 1 : 0,
+        child: _GestureDetector(
+            onPanUpdate: _panUpdate,
+            onPanEnd: _panEnd,
+            onScaleUpdate: _scaleUpdate,
+            onScaleEnd: _scaleEnd,
+            child: RepaintBoundary(
+                child: Center(
+                    child: Transform.translate(
+                        key: _dragItemKey,
+                        offset: offset,
+                        child: Transform.scale(
+                            scale: scale * zoom,
+                            child:
+                                SizedBox.expand(child: widget.feedback)))))));
+  }
+}
+
+class _GestureDetector extends StatefulWidget {
+  final Widget child;
+  final Function onPanUpdate;
+  final Function onPanEnd;
+  final Function onScaleUpdate;
+  final Function onScaleEnd;
+
+  _GestureDetector({
+    this.child,
+    this.onPanUpdate,
+    this.onPanEnd,
+    this.onScaleUpdate,
+    this.onScaleEnd,
+  });
+
+  __GestureDetectorState createState() => __GestureDetectorState();
+}
+
+class __GestureDetectorState extends State<_GestureDetector> {
+  Widget get child => widget.child ?? Container();
+
+  get _panUpdate => widget.onPanUpdate ?? () {};
+
+  get _panEnd => widget.onPanEnd ?? () {};
+
+  get _scaleUpdate => widget.onScaleUpdate ?? () {};
+
+  get _scaleEnd => widget.onScaleEnd ?? () {};
+
+  bool _panning = false;
+  bool _zooming = false;
+  Offset _lastFocalPoint = Offset.zero;
+  double _zoom = 1; // 累计缩放量，累计缩放量小于等于1时，退出缩放模式
+  double _tmpZoom = 1; // 一次缩放操作最终的缩放值
   /// 手势控制器
   _start(_) {
     _lastFocalPoint = _.focalPoint;
@@ -271,32 +331,11 @@ class _CustomDraggableState extends State<CustomDraggable>
     _lastFocalPoint = Offset.zero;
   }
 
-  final GlobalKey _dragItemKey = GlobalKey();
-
-  Widget build(ctx) {
-    var offset = _delta;
-    var scale = _scale;
-    if (_animating) {
-      var rect = _endAnimation?.value;
-//      var scaleX = rect.width / originRect.width;
-//      var scaleY = rect.height / originRect.height;
-      offset = Offset(rect.left, rect.top);
-      scale = rect.width / originRect.width;
-    }
-    return Opacity(
-        opacity: show ? 1 : 0,
-        child: GestureDetector(
-            onScaleStart: _start,
-            onScaleUpdate: _update,
-            onScaleEnd: _end,
-            child: RepaintBoundary(
-                child: Center(
-                    child: Transform.translate(
-                        key: _dragItemKey,
-                        offset: offset,
-                        child: Transform.scale(
-                            scale: scale * zoom,
-                            child:
-                                SizedBox.expand(child: widget.feedback)))))));
+  Widget build(BuildContext context) {
+    return GestureDetector(
+        onScaleStart: _start,
+        onScaleUpdate: _update,
+        onScaleEnd: _end,
+        child: child);
   }
 }

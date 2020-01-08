@@ -44,7 +44,8 @@ class _CustomDraggableState extends State<CustomDraggable>
   bool _panning = false;
   bool _zooming = false;
   Offset _lastFocalPoint = Offset.zero;
-  double _zoom = 1; // scale手势产生的缩放值
+  double zoom = 1;
+  double _zoom = 1; // 累计缩放量，累计缩放量小于等于1时，退出缩放模式
   double _tmpZoom = 1; // 一次缩放操作最终的缩放值
   bool _entering = false;
   bool _animating = false;
@@ -217,18 +218,13 @@ class _CustomDraggableState extends State<CustomDraggable>
   }
 
   _scaleUpdate(_) {
-    _tmpZoom = _zoom * _.scale;
+    zoom = _;
     setState(() {});
   }
 
   _scaleEnd(_) {
-    _zoom = _tmpZoom;
-    if (_zoom <= 1) {
-      _zooming = false;
-      _tmpZoom = 1;
-      _zoom = 1;
-      setState(() {});
-    }
+    zoom = 1;
+    setState(() {});
   }
 
   /// 手势控制器
@@ -238,28 +234,37 @@ class _CustomDraggableState extends State<CustomDraggable>
 
   /// 手势控制器
   _update(_) {
-    if (!_panning || !_zooming) {
-      if (_.scale == 1) {
-        if (!_panning) {
-          _panning = true;
-        }
-        var delta = _.focalPoint - _lastFocalPoint;
-        _panUpdate(delta);
-        _lastFocalPoint = _.focalPoint;
-      } else {
-        if (!_zooming) {
-          _zooming = true;
-        }
-        _scaleUpdate(_);
+    // 处理缩放
+    if (!_zooming && _.scale == 1) {
+      if (!_panning) {
+        _panning = true;
       }
+      var delta = _.focalPoint - _lastFocalPoint;
+      _panUpdate(delta);
+      _lastFocalPoint = _.focalPoint;
+    }
+    // 处理平移
+    if (!_panning && _.scale != 1) {
+      if (!_zooming) {
+        _zooming = true;
+      }
+      _tmpZoom = _zoom * _.scale;
+      _scaleUpdate(_tmpZoom);
     }
   }
 
   /// 手势控制器
   _end(_) {
     if (_zooming) {
-      _scaleEnd(_);
-    } else {
+      _zoom = _tmpZoom;
+      if (_tmpZoom <= 1) {
+        _zooming = false;
+        _tmpZoom = 1;
+        _zoom = 1;
+        _scaleEnd(_);
+      }
+    }
+    if (_panning) {
       _panEnd(null);
     }
     _panning = false;
@@ -290,7 +295,7 @@ class _CustomDraggableState extends State<CustomDraggable>
                         key: _dragItemKey,
                         offset: offset,
                         child: Transform.scale(
-                            scale: scale * _tmpZoom,
+                            scale: scale * zoom,
                             child:
                                 SizedBox.expand(child: widget.feedback)))))));
   }

@@ -18,6 +18,9 @@ class _PhotoLibraryState extends State<PhotoLibrary> {
   int index;
   int hideIndex;
 
+  OverlayState _state;
+  OverlayEntry _entry;
+
   initState() {
     super.initState();
     init();
@@ -35,7 +38,15 @@ class _PhotoLibraryState extends State<PhotoLibrary> {
   void enterPreview(i) {
     index = i;
     showPreview = true;
-    setState(() {});
+    _state = Overlay.of(context);
+    _entry = OverlayEntry(
+        builder: (_) => PhotoPreview(
+              list: list,
+              initialPage: index,
+              exitPreview: exitPreview,
+              getRect: getCellRect,
+            ));
+    _state.insert(_entry);
     Future.delayed(Duration(milliseconds: 600)).then((_) {
       if (showPreview) {
         hideIndex = i;
@@ -49,6 +60,7 @@ class _PhotoLibraryState extends State<PhotoLibrary> {
     index = null;
     hideIndex = null;
     showPreview = false;
+    _entry.remove();
     setState(() {});
   }
 
@@ -66,35 +78,22 @@ class _PhotoLibraryState extends State<PhotoLibrary> {
         future: _thumbList,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.done) {
-            return Stack(
-              children: [
-                Container(
-                    padding: EdgeInsets.symmetric(horizontal: 1),
-                    child: GridView.count(
-                        crossAxisCount: 4,
-                        children: List.from(snapshot.data.map((_) => Opacity(
-                            opacity:
-                                snapshot.data.indexOf(_) == hideIndex ? 0 : 1,
-                            child: Container(
-                                padding: EdgeInsets.all(1),
-                                child: GestureDetector(
-                                    onTap: () {
-                                      var index = snapshot.data.indexOf(_);
-                                      enterPreview(index);
-                                    },
-                                    child: Image.memory(_,
-                                        key: _keys[snapshot.data.indexOf(_)],
-                                        fit: BoxFit.cover)))))))),
-                Visibility(
-                    visible: showPreview,
-                    child: PhotoPreview(
-                      list: list,
-                      initialPage: index,
-                      exitPreview: exitPreview,
-                      getRect: getCellRect,
-                    ))
-              ],
-            );
+            return Container(
+                padding: EdgeInsets.symmetric(horizontal: 1),
+                child: GridView.count(
+                    crossAxisCount: 4,
+                    children: List.from(snapshot.data.map((_) => Opacity(
+                        opacity: snapshot.data.indexOf(_) == hideIndex ? 0 : 1,
+                        child: Container(
+                            padding: EdgeInsets.all(1),
+                            child: GestureDetector(
+                                onTap: () {
+                                  var index = snapshot.data.indexOf(_);
+                                  enterPreview(index);
+                                },
+                                child: Image.memory(_,
+                                    key: _keys[snapshot.data.indexOf(_)],
+                                    fit: BoxFit.cover))))))));
           }
           return Container();
         });

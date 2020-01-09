@@ -3,16 +3,13 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
-import 'package:photo_manager/photo_manager.dart';
+import '../image-picker/big_image.dart';
 
-import '../../utils/rect.dart';
-
-const Duration _endDuration = Duration(milliseconds: 300);
+const Duration _endDuration = Duration(milliseconds: 30000);
 
 class PreviewItem extends StatefulWidget {
   final bool initialPage;
-  final AssetEntity img;
-  final Widget feedback;
+  final BigImage feedback;
   final double opacity;
   final Function getRect;
   final Function onPanUpdate;
@@ -22,7 +19,6 @@ class PreviewItem extends StatefulWidget {
 
   PreviewItem({
     @required this.initialPage,
-    @required this.img,
     @required this.feedback,
     this.opacity = 1,
     this.getRect,
@@ -56,12 +52,7 @@ class _PreviewItemState extends State<PreviewItem>
   static final double screenHeight =
       window.physicalSize.height / window.devicePixelRatio;
 
-  Rect get originRect {
-    var cur = _dragItemKey.currentContext.findRenderObject();
-    return getRect(cur);
-  }
-
-  AssetEntity get img => widget.img;
+  static Rect originRect = Rect.fromLTWH(0, 0, screenWidth, screenHeight);
 
   initState() {
     super.initState();
@@ -74,16 +65,18 @@ class _PreviewItemState extends State<PreviewItem>
       Future.delayed(Duration.zero).then((_) {
         Rect _source = widget.getRect();
         _delta = _source.center - originRect.center;
-        _scale = math.max(_source.width / originRect.width,
-            _source.height / originRect.height);
+        _scale = math.max(
+          _source.width / originRect.width,
+          _source.height / originRect.height,
+        );
 
         _entering = true;
         _canceling = true;
         show = true;
 
         double ratio = 1;
-        if (img.width > img.height) {
-          ratio = img.width / img.height;
+        if (_imgWidth > _imgHeight) {
+          ratio = _imgWidth / _imgHeight;
         }
         var source = Rect.fromLTWH(
           _delta.dx,
@@ -142,11 +135,11 @@ class _PreviewItemState extends State<PreviewItem>
       target = originRect;
       _canceling = true;
     } else {
-      double ratio = 1;
-      if (img.width > img.height) {
-        ratio = img.width / img.height;
-      }
 
+      double ratio = 1;
+      if (_imgWidth > _imgHeight) {
+        ratio = _imgWidth / _imgHeight;
+      }
       target = widget.getRect();
       target = Rect.fromLTWH(
           target.left - target.width * (ratio - 1) / 2,
@@ -241,18 +234,26 @@ class _PreviewItemState extends State<PreviewItem>
     widget.onScaleStatusChange(false);
   }
 
-  final GlobalKey _dragItemKey = GlobalKey();
+  BigImage get _img => widget.feedback;
+
+  int get _imgWidth => widget.feedback.entity.width;
+
+  int get _imgHeight => widget.feedback.entity.height;
 
   Widget build(ctx) {
     var offset = _delta;
     var scale = _scale;
+    double widthFactor = 1;
+    double heightFactor = 1;
     if (_animating) {
       var rect = _endAnimation?.value;
-//      var scaleX = rect.width / originRect.width;
-//      var scaleY = rect.height / originRect.height;
       offset = Offset(rect.left, rect.top);
       scale = rect.width / originRect.width;
+//      widthFactor = _imgWidth > _imgHeight ? scale : 1;
+//      heightFactor = _imgWidth < _imgHeight ? scale : 1;
     }
+    print(scale);
+//    debugPrint('${_img.entity.width}, ${_img.entity.height}');
     return Opacity(
         opacity: show ? 1 : 0,
         child: _GestureDetector(
@@ -268,11 +269,14 @@ class _PreviewItemState extends State<PreviewItem>
                 child: RepaintBoundary(
                     child: Center(
                         child: Transform.translate(
-                            key: _dragItemKey,
                             offset: offset,
                             child: Transform.scale(
                                 scale: scale * zoom,
-                                child: widget.feedback)))))));
+                                child: ClipRect(
+                                    child: Align(
+                                        widthFactor: widthFactor,
+                                        heightFactor: heightFactor,
+                                        child: _img)))))))));
   }
 }
 

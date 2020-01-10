@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 
 import '../image-picker/big_image.dart';
 
-const Duration _endDuration = Duration(milliseconds: 30000);
+const Duration _endDuration = Duration(milliseconds: 300);
 
 class PreviewItem extends StatefulWidget {
   final bool initialPage;
@@ -52,8 +52,6 @@ class _PreviewItemState extends State<PreviewItem>
   static final double screenHeight =
       window.physicalSize.height / window.devicePixelRatio;
 
-  static Rect originRect = Rect.fromLTWH(0, 0, screenWidth, screenHeight);
-
   initState() {
     super.initState();
 
@@ -63,28 +61,12 @@ class _PreviewItemState extends State<PreviewItem>
     if (widget.initialPage) {
       /// 入场时，假设先有一个从中间到入场位置的位移，执行'取消'，完成入场动作
       Future.delayed(Duration.zero).then((_) {
-        Rect _source = widget.getRect();
-        _delta = _source.center - originRect.center;
-        _scale = math.max(
-          _source.width / originRect.width,
-          _source.height / originRect.height,
-        );
-
+        _delta = _targetMin.center - _targetMax.center;
         _entering = true;
         _canceling = true;
         show = true;
 
-        double ratio = 1;
-        if (_imgWidth > _imgHeight) {
-          ratio = _imgWidth / _imgHeight;
-        }
-        var source = Rect.fromLTWH(
-          _delta.dx,
-          _delta.dy,
-          originRect.width * _scale * ratio,
-          originRect.height * _scale * ratio,
-        );
-        animate(source, originRect);
+        animate(_targetMin, _targetMax);
       });
     } else {
       show = true;
@@ -131,56 +113,32 @@ class _PreviewItemState extends State<PreviewItem>
     }
 
     Rect target;
-    if (cancel) {
-      target = originRect;
-      _canceling = true;
-    } else {
-
-      double ratio = 1;
-      if (_imgWidth > _imgHeight) {
-        ratio = _imgWidth / _imgHeight;
-      }
+    if (!cancel) {
       target = widget.getRect();
-      target = Rect.fromLTWH(
-          target.left - target.width * (ratio - 1) / 2,
-          target.top - target.height * (ratio - 1) / 2,
-          target.width * ratio,
-          target.height * ratio);
+    } else {
+      _canceling = true;
+      target = _targetMax;
     }
-    var source = Rect.fromLTWH(
-      _delta.dx,
-      _delta.dy,
-      originRect.width * _scale,
-      originRect.height * _scale,
+    var source = _targetMax.translate(_delta.dx, _delta.dy);
+    source = Rect.fromLTWH(
+      source.left,
+      source.top,
+      source.width * _scale,
+      source.height * _scale,
     );
     animate(source, target);
   }
 
   /// 计算移动的开始，结束位置
   /// 接收原始数据（即显示在屏幕上的位置，大小），根据originRect计算目标位置
-  animate(Rect source, Rect _target) {
+  animate(Rect source, Rect target) {
     _animating = true;
-
-    var targetX = _target.left +
-        _target.width / 2 -
-        originRect.width / 2 -
-        originRect.left;
-    var targetY = _target.top +
-        _target.height / 2 -
-        originRect.height / 2 -
-        originRect.top;
-    var target = Rect.fromLTWH(
-      targetX,
-      targetY,
-      _target.width,
-      _target.height,
-    );
     _endController.reset();
     _endAnimation?.removeStatusListener(endAnimationStatusCallback);
     _endAnimation =
         RectTween(begin: source, end: target).animate(_endController);
     _endAnimation
-      ..addListener(() => animUpdate((targetY - _delta.dy).abs()))
+      ..addListener(() => animUpdate((target.top - _delta.dy).abs()))
       ..addStatusListener(endAnimationStatusCallback);
     _endController.forward();
   }
@@ -240,20 +198,26 @@ class _PreviewItemState extends State<PreviewItem>
 
   int get _imgHeight => widget.feedback.entity.height;
 
+  Rect get _targetMin => widget.getRect();
+
+  Rect get _targetMax {
+    var _r = math.min(screenWidth / _imgWidth, screenHeight / _imgHeight);
+    var width = (_imgWidth * _r).floor().toDouble();
+    var height = (_imgHeight * _r).floor().toDouble();
+    return Rect.fromLTWH(
+      (screenWidth - width) / 2,
+      (screenHeight - height) / 2,
+      width,
+      height,
+    );
+  }
+
   Widget build(ctx) {
-    var offset = _delta;
-    var scale = _scale;
-    double widthFactor = 1;
-    double heightFactor = 1;
+    var offset = Offset(_targetMax.left, _targetMax.top) + _delta;
     if (_animating) {
-      var rect = _endAnimation?.value;
+      var rect = _endAnimation.value;
       offset = Offset(rect.left, rect.top);
-      scale = rect.width / originRect.width;
-//      widthFactor = _imgWidth > _imgHeight ? scale : 1;
-//      heightFactor = _imgWidth < _imgHeight ? scale : 1;
     }
-    print(scale);
-//    debugPrint('${_img.entity.width}, ${_img.entity.height}');
     return Opacity(
         opacity: show ? 1 : 0,
         child: _GestureDetector(
@@ -267,16 +231,20 @@ class _PreviewItemState extends State<PreviewItem>
                 height: screenHeight,
                 color: Color.fromARGB(0, 255, 255, 255), // 有颜色才能全屏拖动，什么鬼？
                 child: RepaintBoundary(
-                    child: Center(
+                    child: Align(
+                        alignment: AlignmentDirectional.topStart,
                         child: Transform.translate(
                             offset: offset,
                             child: Transform.scale(
-                                scale: scale * zoom,
-                                child: ClipRect(
-                                    child: Align(
-                                        widthFactor: widthFactor,
-                                        heightFactor: heightFactor,
-                                        child: _img)))))))));
+                                scale: zoom,
+                                // todo 配合Align才能将img限制在宽高范围内
+                                child: Container(
+                                    // todo 有可能是targetMin
+                                    width: _endAnimation?.value?.width ??
+                                        _targetMax.width * _scale,
+                                    height: _endAnimation?.value?.height ??
+                                        _targetMax.height * _scale,
+                                    child: _img))))))));
   }
 }
 

@@ -21,10 +21,6 @@ class _BigImageState extends State<BigImage>
 
   int get containerHeight => widget.maxHeight;
 
-  int get width => widget.entity.width;
-
-  int get height => widget.entity.height;
-
   Widget build(BuildContext context) {
     super.build(context);
     return FutureBuilder(
@@ -32,7 +28,7 @@ class _BigImageState extends State<BigImage>
       builder: (ctx, snapshot) {
         var data = snapshot.data;
         if (snapshot.connectionState == ConnectionState.done && data != null) {
-          return Image.memory(data, fit: BoxFit.contain);
+          return Image.memory(data, fit: BoxFit.cover);
         }
         return Container();
       },

@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 
 import '../image-picker/big_image.dart';
 
-const Duration _endDuration = Duration(milliseconds: 300);
+const Duration _endDuration = Duration(milliseconds: 200);
 
 class PreviewItem extends StatefulWidget {
   final bool initialPage;
@@ -95,7 +95,9 @@ class _PreviewItemState extends State<PreviewItem>
         _deltaYTmp = [];
       }
 
-      widget.onPanUpdate(_delta.dy);
+      var deltaY = _delta.dy * 8;
+      deltaY = math.min(screenHeight, deltaY);
+      widget.onPanUpdate(deltaY);
     }
 
     setState(() {});
@@ -144,24 +146,24 @@ class _PreviewItemState extends State<PreviewItem>
   }
 
   animUpdate(double total) {
-    setState(() {});
-
     double deltaY = 0;
     if (_canceling) {
       deltaY = 0;
     } else {
       /// 下滑退出预览的流程是下滑+松手后返回图片位置动画两个过程，_canceling表示的是松手后
       /// 的过程，所以需要处理delta，以保证松手后的delta仍是增长状态
-      deltaY = _delta.dy + _endController.value * total;
+      deltaY = _delta.dy * 8 + _endController.value * total;
+      deltaY = math.min(screenHeight, deltaY);
     }
 
     /// 入场时
     if (_entering) {
-      deltaY = (1 - _endController.value) * total;
+      deltaY = (1 - _endController.value) * screenHeight;
     }
     deltaY = deltaY.floor().toDouble();
 
     widget.onPanUpdate(deltaY);
+    setState(() {});
   }
 
   endAnimationStatusCallback(status) {
@@ -244,7 +246,6 @@ class _PreviewItemState extends State<PreviewItem>
                                 scale: zoom,
                                 // todo 配合Align才能将img限制在宽高范围内
                                 child: Container(
-                                    // todo 有可能是targetMin
                                     width: _endAnimation?.value?.width ??
                                         _targetMax.width * _scale,
                                     height: _endAnimation?.value?.height ??

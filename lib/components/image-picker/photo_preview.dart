@@ -28,7 +28,6 @@ class PhotoPreview extends StatefulWidget {
 class _PhotoPreviewState extends State<PhotoPreview> {
   bool showPreview = false;
   bool dragging = false;
-  bool showLayer = false;
   bool _scaling = false; // 缩放时禁用page的滚动
 
   double pageViewHeight;
@@ -50,12 +49,12 @@ class _PhotoPreviewState extends State<PhotoPreview> {
     super.initState();
 
     horizontalScrolling = false;
-    _list = widget.list.map((v) {
-      return BigImage(
-          entity: v,
-          maxWidth: screenWidth.floor(),
-          maxHeight: screenHeight.floor());
-    }).toList();
+    _list = widget.list
+        .map((v) => BigImage(
+            entity: v,
+            maxWidth: screenWidth.floor(),
+            maxHeight: screenHeight.floor()))
+        .toList();
     _pageController = PageController(
         initialPage: widget.initialPage, viewportFraction: 0.9999);
     _index = widget.initialPage;
@@ -66,27 +65,25 @@ class _PhotoPreviewState extends State<PhotoPreview> {
     _pageController?.dispose();
   }
 
-  toggleLayer() {
-    setState(() {
-      showLayer = !showLayer;
-    });
-  }
-
   Widget previewItem(ctx, index) {
     var child = _list[index];
     return PreviewItem(
         initialPage: widget.initialPage == index,
         feedback: child,
-        getRect: () {
-          return widget.getRect(_index);
-        },
+        getRect: () => widget.getRect(_index),
         onScaleStatusChange: (scaling) {
           _scaling = scaling;
           setState(() {});
         },
         onPanUpdate: (_) {
-          _deltaY = _.toDouble();
-          setState(() {});
+          _deltaY = _?.toDouble();
+
+          double alpha = 0;
+          if (_deltaY != null) {
+            alpha = 1 - _deltaY / screenHeight;
+            alpha = math.min(1, alpha);
+          }
+          _bgKey.currentState.setAlpha(alpha);
         },
         onEnd: () {
           _deltaY = null;
@@ -94,16 +91,13 @@ class _PhotoPreviewState extends State<PhotoPreview> {
         });
   }
 
-  Widget build(BuildContext context) {
-    double alpha = 0;
-    if (_deltaY != null) {
-      alpha = 1 - _deltaY / screenHeight;
-      alpha = math.min(1, alpha);
-    }
+  /// 不指定范型，访问不到方法（编译不通过）
+  GlobalKey<BlackBgState> _bgKey = GlobalKey();
 
+  Widget build(BuildContext context) {
     return Stack(
       children: [
-        Container(color: Color.fromARGB((alpha * 255).toInt(), 0, 0, 0)),
+        BlackBg(key: _bgKey),
         PageView.builder(
             physics: _scaling ? NeverScrollableScrollPhysics() : null,
             controller: _pageController,
@@ -115,5 +109,26 @@ class _PhotoPreviewState extends State<PhotoPreview> {
             dragStartBehavior: DragStartBehavior.start)
       ],
     );
+  }
+}
+
+class BlackBg extends StatefulWidget {
+  BlackBg({Key key}) : super(key: key);
+
+  BlackBgState createState() => BlackBgState(key);
+}
+
+class BlackBgState extends State<BlackBg> {
+  double _alpha = 0;
+
+  BlackBgState(setAlpha);
+
+  void setAlpha(double alpha) {
+    _alpha = alpha;
+    setState(() {});
+  }
+
+  Widget build(BuildContext context) {
+    return Container(color: Color.fromARGB((_alpha * 255).toInt(), 0, 0, 0));
   }
 }

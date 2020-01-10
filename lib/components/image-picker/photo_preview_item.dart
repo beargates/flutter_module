@@ -146,17 +146,22 @@ class _PreviewItemState extends State<PreviewItem>
   animUpdate(double total) {
     setState(() {});
 
-    var deltaY = _endAnimation.value.top;
-
-    /// 下滑退出预览的流程是下滑+松手后返回图片位置动画两个过程，_canceling表示的是松手后
-    /// 的过程，所以需要处理delta，以保证松手后的delta仍是增长状态
-    if (!_canceling) {
+    double deltaY = 0;
+    if (_canceling) {
+      deltaY = 0;
+    } else {
+      /// 下滑退出预览的流程是下滑+松手后返回图片位置动画两个过程，_canceling表示的是松手后
+      /// 的过程，所以需要处理delta，以保证松手后的delta仍是增长状态
       deltaY = _delta.dy + _endController.value * total;
     }
-    if (!_entering) {
-      deltaY = math.max(0, deltaY);
+
+    /// 入场时
+    if (_entering) {
+      deltaY = (1 - _endController.value) * total;
     }
-    widget.onPanUpdate(deltaY.abs());
+    deltaY = deltaY.floor().toDouble();
+
+    widget.onPanUpdate(deltaY);
   }
 
   endAnimationStatusCallback(status) {

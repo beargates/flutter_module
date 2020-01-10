@@ -97,9 +97,8 @@ class _PhotoPreviewState extends State<PhotoPreview> {
   Widget build(BuildContext context) {
     double alpha = 0;
     if (_deltaY != null) {
-      var validDis = math.max(0, _deltaY);
-      alpha = (1 - validDis / screenHeight * 5);
-      alpha = math.max(0, alpha);
+      alpha = 1 - _deltaY / screenHeight;
+      alpha = math.min(1, alpha);
     }
 
     return Stack(

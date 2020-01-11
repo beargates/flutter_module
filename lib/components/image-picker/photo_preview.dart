@@ -1,5 +1,5 @@
 import 'dart:ui';
-import 'dart:math' as math;
+//import 'dart:math' as math;
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/rendering.dart';
@@ -8,7 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:photo_manager/photo_manager.dart';
 
 import '../image-picker/big_image.dart';
-import '../image-picker/photo_preview_item.dart';
+import '../image-picker/photo_preview_item_animated.dart';
 
 class PhotoPreview extends StatefulWidget {
   final List<AssetEntity> list;
@@ -42,7 +42,7 @@ class _PhotoPreviewState extends State<PhotoPreview> {
   OverlayEntry overlayEntry;
   bool horizontalScrolling;
   double opacity = 0.5;
-  double _deltaY;
+//  double _deltaY;
   int _index;
 
   initState() {
@@ -75,29 +75,29 @@ class _PhotoPreviewState extends State<PhotoPreview> {
           _scaling = scaling;
           setState(() {});
         },
-        onPanUpdate: (_) {
-          _deltaY = _?.toDouble();
-
-          double alpha = 0;
-          if (_deltaY != null) {
-            alpha = 1 - _deltaY / screenHeight;
-            alpha = math.min(1, alpha);
-          }
-          _bgKey.currentState.setAlpha(alpha);
-        },
+//        onPanUpdate: (_) {
+//          _deltaY = _?.toDouble();
+//
+//          double alpha = 0;
+//          if (_deltaY != null) {
+//            alpha = 1 - _deltaY / screenHeight;
+//            alpha = math.min(1, alpha);
+//          }
+//          _bgKey.currentState.setAlpha(alpha);
+//        },
         onEnd: () {
-          _deltaY = null;
+//          _deltaY = null;
           widget.exitPreview();
         });
   }
 
   /// 不指定范型，访问不到方法（编译不通过）
-  GlobalKey<BlackBgState> _bgKey = GlobalKey();
+//  GlobalKey<BlackBgState> _bgKey = GlobalKey();
 
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        BlackBg(key: _bgKey),
+//        BlackBg(key: _bgKey),
         PageView.builder(
             physics: _scaling ? NeverScrollableScrollPhysics() : null,
             controller: _pageController,

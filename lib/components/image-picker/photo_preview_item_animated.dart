@@ -5,25 +5,23 @@ import 'package:flutter/material.dart';
 
 import '../image-picker/big_image.dart';
 
-const Duration _endDuration = Duration(milliseconds: 3000);
+const Duration _endDuration = Duration(milliseconds: 260);
 
 class PreviewItem extends StatefulWidget {
   final bool initialPage;
   final BigImage feedback;
-  final double opacity;
   final Function getRect;
-  final Function onPanUpdate;
-  final Function onAnimate;
+  final Function onAnimateStart;
+  final Function onAnimateEnd;
   final Function onEnd;
   final Function onScaleStatusChange;
 
   PreviewItem({
     @required this.initialPage,
     @required this.feedback,
-    this.opacity = 1,
     this.getRect,
-    this.onPanUpdate,
-    this.onAnimate,
+    this.onAnimateStart,
+    this.onAnimateEnd,
     this.onEnd,
     this.onScaleStatusChange,
   });
@@ -69,6 +67,10 @@ class _PreviewItemState extends State<PreviewItem> {
       _curRect = _targetMax;
     }
     show = true;
+  }
+
+  _panStart() {
+    widget.onAnimateStart();
   }
 
   _panUpdate(delta) {
@@ -137,6 +139,7 @@ class _PreviewItemState extends State<PreviewItem> {
   }
 
   animationEnd() {
+    widget.onAnimateEnd();
     if (!_canceling) {
       widget.onEnd();
     }
@@ -191,6 +194,7 @@ class _PreviewItemState extends State<PreviewItem> {
       return Container();
     }
     return _GestureDetector(
+        onPanStart: _panStart,
         onPanUpdate: _panUpdate,
         onPanEnd: _panEnd,
         onScaleStart: _scaleStart,
@@ -243,6 +247,7 @@ extension _Rect on Rect {
 
 class _GestureDetector extends StatefulWidget {
   final Widget child;
+  final Function onPanStart;
   final Function onPanUpdate;
   final Function onPanEnd;
   final Function onScaleStart;
@@ -251,6 +256,7 @@ class _GestureDetector extends StatefulWidget {
 
   _GestureDetector({
     this.child,
+    this.onPanStart,
     this.onPanUpdate,
     this.onPanEnd,
     this.onScaleStart,
@@ -263,6 +269,8 @@ class _GestureDetector extends StatefulWidget {
 
 class __GestureDetectorState extends State<_GestureDetector> {
   Widget get child => widget.child ?? Container();
+
+  get _panStart => widget.onPanStart ?? () {};
 
   get _panUpdate => widget.onPanUpdate ?? () {};
 
@@ -282,6 +290,7 @@ class __GestureDetectorState extends State<_GestureDetector> {
   /// 手势控制器
   _start(_) {
     _lastFocalPoint = _.focalPoint;
+    _panStart();
   }
 
   /// 手势控制器

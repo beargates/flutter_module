@@ -17,7 +17,7 @@ PODS:
     - Flutter
   - path_provider (0.0.1):
     - Flutter
-  - permission_handler (4.0.0):
+  - permission_handler (4.1.0):
     - Flutter
   - photo_manager (0.0.1):
     - Flutter
@@ -78,7 +78,7 @@ SPEC CHECKSUMS:
   FlutterPluginRegistrant: f11d14095ebee2d337c13428d17b82030c868d29
   image_picker: e3eacd46b94694dde7cf2705955cece853aa1a8f
   path_provider: fb74bd0465e96b594bb3b5088ee4a4e7bb1f2a9d
-  permission_handler: 0fb88b8a3c23e31e5de45b8f1bb8b7de28cf8941
+  permission_handler: b41310bab60fffbf8b5732cd9b4f565671d14762
   photo_manager: 47ca9adddeea702246c96c6f67769f03907cd953
   Qiniu: a2fb1f87b40f52bc1f386d93c6d48aab09472eae
   sy_flutter_qiniu_storage: 3a33fb552bb77f4777d261469111f52ad35307fb

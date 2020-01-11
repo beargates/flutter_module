@@ -42,6 +42,7 @@ class _PhotoPreviewState extends State<PhotoPreview> {
   OverlayEntry overlayEntry;
   bool horizontalScrolling;
   double opacity = 0.5;
+
 //  double _deltaY;
   int _index;
 
@@ -85,6 +86,12 @@ class _PhotoPreviewState extends State<PhotoPreview> {
 //          }
 //          _bgKey.currentState.setAlpha(alpha);
 //        },
+        onAnimateStart: () {
+          _bgKey.currentState.setAlpha(0);
+        },
+        onAnimateEnd: () {
+          _bgKey.currentState.setAlpha(1);
+        },
         onEnd: () {
 //          _deltaY = null;
           widget.exitPreview();
@@ -92,12 +99,12 @@ class _PhotoPreviewState extends State<PhotoPreview> {
   }
 
   /// 不指定范型，访问不到方法（编译不通过）
-//  GlobalKey<BlackBgState> _bgKey = GlobalKey();
+  GlobalKey<BlackBgState> _bgKey = GlobalKey();
 
   Widget build(BuildContext context) {
     return Stack(
       children: [
-//        BlackBg(key: _bgKey),
+        BlackBg(key: _bgKey),
         PageView.builder(
             physics: _scaling ? NeverScrollableScrollPhysics() : null,
             controller: _pageController,

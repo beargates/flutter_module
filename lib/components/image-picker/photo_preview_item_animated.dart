@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 
 import '../image-picker/big_image.dart';
 
-const Duration _endDuration = Duration(milliseconds: 260);
+const Duration _endDuration = Duration(milliseconds: 200);
 
 class PreviewItem extends StatefulWidget {
   final bool initialPage;
@@ -31,7 +31,6 @@ class PreviewItem extends StatefulWidget {
 
 class _PreviewItemState extends State<PreviewItem> {
   Offset _delta = Offset.zero;
-  Offset _lastDelta = Offset.zero;
   double _scale = 1; // pan手势产生的缩放值
   double zoom = 1;
   bool _zooming = false;
@@ -74,8 +73,7 @@ class _PreviewItemState extends State<PreviewItem> {
   }
 
   _panUpdate(delta) {
-    _lastDelta = delta;
-    _delta += _lastDelta;
+    _delta += delta;
 
     if (!_zooming) {
       _scale = 1 - _delta.dy / screenHeight / 1.5;
@@ -83,8 +81,8 @@ class _PreviewItemState extends State<PreviewItem> {
       _scale = math.max(0.8, _scale); // 最小不会超过0.8
 
       /// 用于判定取消动作
-      if (_lastDelta.dy < 0) {
-        _deltaYTmp.add(_lastDelta.dy);
+      if (delta.dy < 0) {
+        _deltaYTmp.add(delta.dy);
       } else {
         _deltaYTmp = [];
       }
@@ -143,12 +141,12 @@ class _PreviewItemState extends State<PreviewItem> {
     if (!_canceling) {
       widget.onEnd();
     }
-    _lastDelta = Offset.zero;
-    _delta = Offset.zero;
+//    _delta = Offset.zero;
     _deltaYTmp = [];
     _scale = 1;
     _animating = false;
     _canceling = false;
+    setState(() {});
   }
 
   _scaleStart() {
@@ -165,6 +163,7 @@ class _PreviewItemState extends State<PreviewItem> {
     zoom = 1;
     _zooming = false;
     _delta = Offset.zero;
+    // todo
     setState(() {});
     widget.onScaleStatusChange(false);
   }

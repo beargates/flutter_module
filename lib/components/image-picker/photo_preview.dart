@@ -1,5 +1,4 @@
 import 'dart:ui';
-//import 'dart:math' as math;
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/rendering.dart';
@@ -8,19 +7,22 @@ import 'package:flutter/material.dart';
 import 'package:photo_manager/photo_manager.dart';
 
 import '../image-picker/big_image.dart';
-import '../image-picker/photo_preview_item_animated.dart';
+import '../image-picker/photo_preview_item_hero.dart';
 
 class PhotoPreview extends StatefulWidget {
   final List<AssetEntity> list;
   final int initialPage;
-  final exitPreview;
-  final Function getRect;
+  final List<Object> tags;
+  final Function onWillExit; // 页面即将退出
+  final Function onExit; // 页面已退出（hero动画已结束）
 
-  PhotoPreview(
-      {@required this.list,
-      this.initialPage = 0,
-      this.exitPreview,
-      this.getRect});
+  PhotoPreview({
+    @required this.list,
+    this.initialPage = 0,
+    this.tags,
+    this.onWillExit,
+    this.onExit,
+  });
 
   _PhotoPreviewState createState() => _PhotoPreviewState();
 }
@@ -43,9 +45,6 @@ class _PhotoPreviewState extends State<PhotoPreview> {
   bool horizontalScrolling;
   double opacity = 0.5;
 
-//  double _deltaY;
-  int _index;
-
   initState() {
     super.initState();
 
@@ -56,9 +55,7 @@ class _PhotoPreviewState extends State<PhotoPreview> {
             maxWidth: screenWidth.floor(),
             maxHeight: screenHeight.floor()))
         .toList();
-    _pageController = PageController(
-        initialPage: widget.initialPage, viewportFraction: 0.9999);
-    _index = widget.initialPage;
+    _pageController = PageController(initialPage: widget.initialPage);
   }
 
   void dispose() {
@@ -66,36 +63,20 @@ class _PhotoPreviewState extends State<PhotoPreview> {
     _pageController?.dispose();
   }
 
+  void deactivate() {
+    super.deactivate();
+
+    widget.onExit();
+  }
+
   Widget previewItem(ctx, index) {
     var child = _list[index];
     return PreviewItem(
-        initialPage: widget.initialPage == index,
-        feedback: child,
-        getRect: () => widget.getRect(_index),
-        onScaleStatusChange: (scaling) {
-          _scaling = scaling;
-          setState(() {});
-        },
-//        onPanUpdate: (_) {
-//          _deltaY = _?.toDouble();
-//
-//          double alpha = 0;
-//          if (_deltaY != null) {
-//            alpha = 1 - _deltaY / screenHeight;
-//            alpha = math.min(1, alpha);
-//          }
-//          _bgKey.currentState.setAlpha(alpha);
-//        },
-        onAnimateStart: () {
-          _bgKey.currentState.setAlpha(0);
-        },
-        onAnimateEnd: () {
-          _bgKey.currentState.setAlpha(1);
-        },
-        onEnd: () {
-//          _deltaY = null;
-          widget.exitPreview();
-        });
+      tag: widget.tags[index],
+      img: widget.list[index],
+      child: child,
+      onWillExit: () => widget.onWillExit(index),
+    );
   }
 
   /// 不指定范型，访问不到方法（编译不通过）
@@ -108,9 +89,6 @@ class _PhotoPreviewState extends State<PhotoPreview> {
         PageView.builder(
             physics: _scaling ? NeverScrollableScrollPhysics() : null,
             controller: _pageController,
-            onPageChanged: (_) {
-              _index = _;
-            },
             itemBuilder: previewItem,
             itemCount: widget.list.length,
             dragStartBehavior: DragStartBehavior.start)

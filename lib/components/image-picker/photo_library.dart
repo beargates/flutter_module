@@ -1,25 +1,27 @@
 import 'dart:async';
+import 'dart:ui';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:photo_manager/photo_manager.dart';
 
+import '../image-picker/animated_page_route.dart';
 import '../image-picker/photo_preview.dart';
-import '../../utils/rect.dart';
 
 class PhotoLibrary extends StatefulWidget {
   _PhotoLibraryState createState() => _PhotoLibraryState();
 }
 
+/// 关于Hero动画
+/// 创建多对多Hero动画，在页面pop时，移除多余的hero动画，只保留一个，
+/// 当前页面出现时，再恢复所有hero动画，（其实，进入Hero动画前恢复也可以）
 class _PhotoLibraryState extends State<PhotoLibrary> {
   List<AssetEntity> list;
-  List<GlobalKey> _keys;
+  List<String> _tmpTags;
+  List<String> _tags;
   Future _thumbList;
-  bool showPreview = false;
-  int index;
+  int _index = 19;
   int hideIndex;
-
-  OverlayState _state;
-  OverlayEntry _entry;
 
   initState() {
     super.initState();
@@ -29,46 +31,45 @@ class _PhotoLibraryState extends State<PhotoLibrary> {
   void init() async {
     var paths = await PhotoManager.getAssetPathList();
     list = await paths.elementAt(0)?.assetList;
-    _keys = list.map((_) => GlobalKey()).toList();
+    _tmpTags = list.map((_) => _.id).toList();
+    _tags = _tmpTags;
     _thumbList = Future.wait(list.map((v) => v.thumbData));
     setState(() {});
   }
 
   /// 打开预览
   void enterPreview(i) {
-    index = i;
-    showPreview = true;
-    _state = Overlay.of(context);
-    _entry = OverlayEntry(
-        builder: (_) => PhotoPreview(
-              list: list,
-              initialPage: index,
-              exitPreview: exitPreview,
-              getRect: getCellRect,
-            ));
-    _state.insert(_entry);
-    Future.delayed(Duration(milliseconds: 600)).then((_) {
-      if (showPreview) {
-        hideIndex = i;
-        setState(() {});
-      }
-    });
+    _index = i;
+
+    Navigator.of(context).push(AnimatedPageRoute(previewBuilder));
   }
 
-  /// 退出预览
-  void exitPreview() {
-    index = null;
-    hideIndex = null;
-    showPreview = false;
-    _entry.remove();
+  void resetTags() {
+    _tags = _tmpTags;
     setState(() {});
   }
 
-  Rect getCellRect(int index) {
-    assert(index >= 0 && index <= list.length - 1);
-    var renderObject = _keys[index].currentContext.findRenderObject();
-    return getRect(renderObject);
+  /// 删除除了当前preview图片外的其他图片的tag（删除其hero动画）
+  /// 删除后，会归还回所在的原位置
+  void removeOtherUselessTag(int index) {
+    _tags = _tmpTags.map((_) {
+      if (_tmpTags.indexOf(_) == index) {
+        return _;
+      }
+      return null;
+    }).toList();
+    setState(() {});
   }
+
+  Widget previewBuilder(BuildContext _) => PhotoPreview(
+        list: list,
+        tags: _tags,
+        initialPage: _index,
+        onWillExit: removeOtherUselessTag,
+        onExit: resetTags,
+      );
+
+  GlobalKey tag = GlobalKey();
 
   Widget build(BuildContext context) {
     if ((list?.length ?? 0) == 0) {
@@ -82,20 +83,45 @@ class _PhotoLibraryState extends State<PhotoLibrary> {
                 padding: EdgeInsets.symmetric(horizontal: 1),
                 child: GridView.count(
                     crossAxisCount: 4,
-                    children: List.from(snapshot.data.map((_) => Opacity(
-                        opacity: snapshot.data.indexOf(_) == hideIndex ? 0 : 1,
-                        child: Container(
-                            padding: EdgeInsets.all(1),
-                            child: GestureDetector(
-                                onTap: () {
-                                  var index = snapshot.data.indexOf(_);
-                                  enterPreview(index);
-                                },
-                                child: Image.memory(_,
-                                    key: _keys[snapshot.data.indexOf(_)],
-                                    fit: BoxFit.cover))))))));
+                    children: List.from(snapshot.data.map((_) {
+                      var index = snapshot.data.indexOf(_);
+                      return Thumb(
+                          show: index != hideIndex,
+                          tag: _tags[index],
+                          data: _,
+                          onTap: () {
+                            enterPreview(index);
+                          });
+                    }))));
           }
           return Container();
         });
+  }
+}
+
+class Thumb extends StatelessWidget {
+  Thumb({
+    this.show = true,
+    @required this.tag,
+    this.data,
+    this.onTap,
+  });
+
+  final bool show;
+  final Object tag;
+  final Uint8List data;
+  final Function onTap;
+
+  Widget build(BuildContext context) {
+    Widget child = GestureDetector(
+      onTap: onTap,
+      child: Image.memory(data, fit: BoxFit.cover),
+    );
+    if (tag != null) {
+      child = Hero(tag: tag, child: child);
+    }
+    return Opacity(
+        opacity: show ? 1 : 0,
+        child: Container(margin: EdgeInsets.all(1), child: child));
   }
 }

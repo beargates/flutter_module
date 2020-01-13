@@ -4,6 +4,8 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:photo_manager/photo_manager.dart';
 
+const _duration = Duration(milliseconds: 246);
+
 class PreviewItem extends StatefulWidget {
   PreviewItem({
     this.tag,
@@ -26,7 +28,8 @@ class PreviewItem extends StatefulWidget {
   _PreviewItemState createState() => _PreviewItemState();
 }
 
-class _PreviewItemState extends State<PreviewItem> {
+class _PreviewItemState extends State<PreviewItem>
+    with TickerProviderStateMixin {
   static final double screenWidth =
       window.physicalSize.width / window.devicePixelRatio;
   static final double screenHeight =
@@ -69,12 +72,23 @@ class _PreviewItemState extends State<PreviewItem> {
     }
 
     if (cancel) {
-      _delta = Offset.zero;
-      setState(() {});
+      /// 弹回
+      animate(_delta, Offset.zero);
       widget.onPanStatusChange(false);
     } else {
       widget.onWillExit();
     }
+  }
+
+  animate(Offset from, Offset to) {
+    AnimationController _controller =
+        AnimationController(duration: _duration, vsync: this);
+    Animation _animation = Tween(begin: from, end: to).animate(_controller);
+    _animation.addListener(() {
+      _delta = _animation.value;
+      setState(() {});
+    });
+    _controller.forward();
   }
 
   _scaleStart() {
@@ -132,6 +146,7 @@ class _PreviewItemState extends State<PreviewItem> {
         onScaleEnd: _scaleEnd,
         child: Container(
           width: screenWidth,
+          height: screenHeight,
           color: Color.fromARGB(alpha, 0, 0, 0),
           child: Center(
             child: Transform.translate(

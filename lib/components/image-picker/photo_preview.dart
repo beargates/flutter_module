@@ -13,6 +13,7 @@ class PhotoPreview extends StatefulWidget {
   final List<AssetEntity> list;
   final int initialPage;
   final List<Object> tags;
+  final Function onMount;
   final Function onWillExit; // 页面即将退出
   final Function onExit; // 页面已退出（hero动画已结束）
 
@@ -20,6 +21,7 @@ class PhotoPreview extends StatefulWidget {
     @required this.list,
     this.initialPage = 0,
     this.tags,
+    this.onMount,
     this.onWillExit,
     this.onExit,
   });
@@ -44,6 +46,9 @@ class _PhotoPreviewState extends State<PhotoPreview> {
   OverlayEntry overlayEntry;
   bool horizontalScrolling;
   double opacity = 0.5;
+  int _index;
+
+  bool _mountTriggered = false;
 
   initState() {
     super.initState();
@@ -56,6 +61,15 @@ class _PhotoPreviewState extends State<PhotoPreview> {
             maxHeight: screenHeight.floor()))
         .toList();
     _pageController = PageController(initialPage: widget.initialPage);
+    _index = widget.initialPage;
+  }
+
+  void didUpdateWidget(PhotoPreview oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (!_mountTriggered) {
+      widget?.onMount();
+    }
   }
 
   void dispose() {
@@ -66,7 +80,18 @@ class _PhotoPreviewState extends State<PhotoPreview> {
   void deactivate() {
     super.deactivate();
 
-    widget.onExit();
+    widget?.onExit();
+  }
+
+  onWillExit() {
+    widget.onWillExit(_index, callback: () {
+      Navigator.of(context).pop();
+    });
+  }
+
+  onScaleStatusChange(bool scaling) {
+    _scaling = scaling;
+    setState(() {});
   }
 
   Widget previewItem(ctx, index) {
@@ -75,7 +100,8 @@ class _PhotoPreviewState extends State<PhotoPreview> {
       tag: widget.tags[index],
       img: widget.list[index],
       child: child,
-      onWillExit: () => widget.onWillExit(index),
+      onWillExit: onWillExit,
+      onScaleStatusChange: onScaleStatusChange,
     );
   }
 
@@ -90,6 +116,9 @@ class _PhotoPreviewState extends State<PhotoPreview> {
             physics: _scaling ? NeverScrollableScrollPhysics() : null,
             controller: _pageController,
             itemBuilder: previewItem,
+            onPageChanged: (_) {
+              _index = _;
+            },
             itemCount: widget.list.length,
             dragStartBehavior: DragStartBehavior.start)
       ],

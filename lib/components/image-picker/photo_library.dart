@@ -8,6 +8,8 @@ import 'package:photo_manager/photo_manager.dart';
 import '../image-picker/animated_page_route.dart';
 import '../image-picker/photo_preview.dart';
 
+void fn(){}
+
 class PhotoLibrary extends StatefulWidget {
   _PhotoLibraryState createState() => _PhotoLibraryState();
 }
@@ -38,6 +40,9 @@ class _PhotoLibraryState extends State<PhotoLibrary> {
   }
 
   /// 打开预览
+  /// todo 进入预览前，只有当前tag，在preview页面 mount后，
+  /// todo 改为全部都有tag（保证preview切换后都能有退出的hero动画），
+  /// todo 这样就能保留preview页面PageView的viewportFraction属性
   void enterPreview(i) {
     _index = i;
 
@@ -51,14 +56,16 @@ class _PhotoLibraryState extends State<PhotoLibrary> {
 
   /// 删除除了当前preview图片外的其他图片的tag（删除其hero动画）
   /// 删除后，会归还回所在的原位置
-  void removeOtherUselessTag(int index) {
+  void removeOtherUselessTag(int index, {callback = fn}) {
     _tags = _tmpTags.map((_) {
       if (_tmpTags.indexOf(_) == index) {
         return _;
       }
       return null;
     }).toList();
-    setState(() {});
+    setState(() {
+      callback();
+    });
   }
 
   Widget previewBuilder(BuildContext _) => PhotoPreview(

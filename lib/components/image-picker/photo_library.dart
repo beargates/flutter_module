@@ -8,7 +8,7 @@ import 'package:photo_manager/photo_manager.dart';
 import '../image-picker/animated_page_route.dart';
 import '../image-picker/photo_preview.dart';
 
-void fn(){}
+void fn() {}
 
 class PhotoLibrary extends StatefulWidget {
   _PhotoLibraryState createState() => _PhotoLibraryState();
@@ -125,7 +125,13 @@ class Thumb extends StatelessWidget {
       child: Image.memory(data, fit: BoxFit.cover),
     );
     if (tag != null) {
-      child = Hero(tag: tag, child: child);
+      child = Hero(
+        tag: tag,
+        // 控制飞行路径，默认使用MaterialRectArcTween
+        createRectTween: (Rect begin, Rect end) =>
+            RectTween(begin: begin, end: end),
+        child: child,
+      );
     }
     return Opacity(
         opacity: show ? 1 : 0,

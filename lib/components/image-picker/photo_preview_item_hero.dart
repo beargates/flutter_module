@@ -12,6 +12,7 @@ class PreviewItem extends StatefulWidget {
     this.show = true,
     this.onWillExit,
     this.onScaleStatusChange,
+    this.onPanStatusChange,
   });
 
   final Object tag;
@@ -20,6 +21,7 @@ class PreviewItem extends StatefulWidget {
   final bool show;
   final Function onWillExit;
   final Function onScaleStatusChange;
+  final Function onPanStatusChange;
 
   _PreviewItemState createState() => _PreviewItemState();
 }
@@ -53,6 +55,7 @@ class _PreviewItemState extends State<PreviewItem> {
     }
 
     setState(() {});
+    widget.onPanStatusChange(true);
   }
 
   _panEnd(_) {
@@ -68,6 +71,7 @@ class _PreviewItemState extends State<PreviewItem> {
     if (cancel) {
       _delta = Offset.zero;
       setState(() {});
+      widget.onPanStatusChange(false);
     } else {
       widget.onWillExit();
     }
@@ -104,10 +108,17 @@ class _PreviewItemState extends State<PreviewItem> {
   }
 
   Widget get child => widget.tag != null
-      ? Hero(tag: widget.tag, child: widget.child)
+      ? Hero(
+          tag: widget.tag,
+          // 控制飞行路径
+          createRectTween: (Rect begin, Rect end) =>
+              RectTween(begin: begin, end: end),
+          child: widget.child,
+        )
       : widget.child;
 
   /// todo hero动画完成后有一次闪动
+  /// todo 闪动的原因可能是创建img需要一定的开销，导致从overlay删除到真正的img出现中间有一段黑屏
   Widget build(BuildContext context) {
     var alpha = (_opacity.clamp(0, 1) * 255).toInt();
     var delta = _delta;

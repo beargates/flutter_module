@@ -48,6 +48,7 @@ class _PhotoPreviewState extends State<PhotoPreview> {
   double opacity = 0.5;
   int _index;
 
+  bool _panning = false;
   bool _mountTriggered = false;
 
   initState() {
@@ -83,6 +84,13 @@ class _PhotoPreviewState extends State<PhotoPreview> {
     widget?.onExit();
   }
 
+  updateBg(bool panning) {
+    if (_panning != panning) {
+      _panning = panning;
+      _bgKey.currentState.setAlpha(_panning ? 0 : 1);
+    }
+  }
+
   onWillExit() {
     widget.onWillExit(_index, callback: () {
       Navigator.of(context).pop();
@@ -100,6 +108,7 @@ class _PhotoPreviewState extends State<PhotoPreview> {
       tag: widget.tags[index],
       img: widget.list[index],
       child: child,
+      onPanStatusChange: updateBg,
       onWillExit: onWillExit,
       onScaleStatusChange: onScaleStatusChange,
     );
@@ -133,7 +142,7 @@ class BlackBg extends StatefulWidget {
 }
 
 class BlackBgState extends State<BlackBg> {
-  double _alpha = 0;
+  double _alpha = 1;
 
   BlackBgState(setAlpha);
 

@@ -6,7 +6,7 @@ class AnimatedPageRoute extends PageRouteBuilder {
   AnimatedPageRoute(this.builder)
       : super(
             opaque: false,
-            transitionDuration: const Duration(milliseconds: 300),
+            transitionDuration: const Duration(milliseconds: 246),
             pageBuilder: (BuildContext context, Animation<double> animation1,
                 Animation<double> animation2) {
               return builder(context);

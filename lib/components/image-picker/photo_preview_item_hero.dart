@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:photo_manager/photo_manager.dart';
 
 const _duration = Duration(milliseconds: 246);
+const _minScale = .8;
 
 class PreviewItem extends StatefulWidget {
   PreviewItem({
@@ -46,7 +47,7 @@ class _PreviewItemState extends State<PreviewItem>
     _delta += delta;
 
     if (!_zooming) {
-      _scale = 1 - _delta.dy / (screenHeight * .3);
+      _scale = 1 - _delta.dy / screenHeight;
       _opacity = 1 - _delta.dy / 100;
 
       /// 用于判定取消动作
@@ -86,6 +87,7 @@ class _PreviewItemState extends State<PreviewItem>
     Animation _animation = Tween(begin: from, end: to).animate(_controller);
     _animation.addListener(() {
       _delta = _animation.value;
+      _scale = _scale + _controller.value * (1 - _scale);
       setState(() {});
     });
     _controller.forward();
@@ -136,7 +138,7 @@ class _PreviewItemState extends State<PreviewItem>
   Widget build(BuildContext context) {
     var alpha = (_opacity.clamp(0, 1) * 255).toInt();
     var delta = _delta;
-    var scale = _scale.clamp(.8, 1).toDouble();
+    var scale = _scale.clamp(_minScale, 1).toDouble();
     return _GestureDetector(
 //        onPanStart: _panStart,
         onPanUpdate: _panUpdate,

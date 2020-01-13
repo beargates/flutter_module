@@ -39,7 +39,7 @@ class _PreviewItemState extends State<PreviewItem>
   Offset _delta = Offset.zero;
   double _scale = 1;
   double _opacity = 1;
-  double zoom = 1;
+  double _zoom = 1;
   bool _zooming = false;
   List<double> _deltaYTmp = [];
 
@@ -98,23 +98,38 @@ class _PreviewItemState extends State<PreviewItem>
   }
 
   _scaleUpdate(_) {
-    zoom = _;
+    _zoom = _;
     _zooming = true;
     setState(() {});
   }
 
   _scaleEnd(_) {
-    zoom = 1;
+    _zoom = 1;
     _zooming = false;
     _delta = Offset.zero;
-    // todo
     setState(() {});
     widget.onScaleStatusChange(false);
+  }
+
+  _doubleTap() {
+    _zooming = !_zooming;
+    _zoom = _zooming ? _maxScaleWhenDoubleTap : 1;
+    if (!_zooming) {
+      _delta = Offset.zero;
+    }
+    setState(() {});
+    widget.onScaleStatusChange(_zooming);
   }
 
   int get _imgWidth => widget.img.width;
 
   int get _imgHeight => widget.img.height;
+
+  /// 缩放的极限
+  double get _maxScale => _imgWidth / _displaySize.width;
+
+  /// 双击时缩放到屏幕高度的1.1倍
+  double get _maxScaleWhenDoubleTap => _imgHeight / screenHeight * 1.1;
 
   Size get _displaySize {
     var _r = math.min(screenWidth / _imgWidth, screenHeight / _imgHeight);
@@ -139,6 +154,7 @@ class _PreviewItemState extends State<PreviewItem>
     var alpha = (_opacity.clamp(0, 1) * 255).toInt();
     var delta = _delta;
     var scale = _scale.clamp(_minScale, 1).toDouble();
+    var zoom = _zoom.clamp(double.negativeInfinity, _maxScale);
     return _GestureDetector(
 //        onPanStart: _panStart,
         onPanUpdate: _panUpdate,
@@ -146,6 +162,8 @@ class _PreviewItemState extends State<PreviewItem>
         onScaleStart: _scaleStart,
         onScaleUpdate: _scaleUpdate,
         onScaleEnd: _scaleEnd,
+        onDoubleTap: _doubleTap,
+        maxScale: _maxScale,
         child: Container(
           width: screenWidth,
           height: screenHeight,
@@ -166,6 +184,8 @@ class _PreviewItemState extends State<PreviewItem>
   }
 }
 
+void fn() {}
+
 class _GestureDetector extends StatefulWidget {
   final Widget child;
   final Function onPanStart;
@@ -174,15 +194,21 @@ class _GestureDetector extends StatefulWidget {
   final Function onScaleStart;
   final Function onScaleUpdate;
   final Function onScaleEnd;
+  final Function onDoubleTap;
+  final double minScale;
+  final double maxScale;
 
   _GestureDetector({
     this.child,
-    this.onPanStart,
-    this.onPanUpdate,
-    this.onPanEnd,
-    this.onScaleStart,
-    this.onScaleUpdate,
-    this.onScaleEnd,
+    this.onPanStart = fn,
+    this.onPanUpdate = fn,
+    this.onPanEnd = fn,
+    this.onScaleStart = fn,
+    this.onScaleUpdate = fn,
+    this.onScaleEnd = fn,
+    this.onDoubleTap = fn,
+    this.minScale = double.negativeInfinity,
+    this.maxScale = double.infinity,
   });
 
   __GestureDetectorState createState() => __GestureDetectorState();
@@ -191,17 +217,23 @@ class _GestureDetector extends StatefulWidget {
 class __GestureDetectorState extends State<_GestureDetector> {
   Widget get child => widget.child ?? Container();
 
-  get _panStart => widget.onPanStart ?? () {};
+  get _panStart => widget.onPanStart;
 
-  get _panUpdate => widget.onPanUpdate ?? () {};
+  get _panUpdate => widget.onPanUpdate;
 
-  get _panEnd => widget.onPanEnd ?? () {};
+  get _panEnd => widget.onPanEnd;
 
-  get _scaleStart => widget.onScaleStart ?? () {};
+  get _scaleStart => widget.onScaleStart;
 
-  get _scaleUpdate => widget.onScaleUpdate ?? () {};
+  get _scaleUpdate => widget.onScaleUpdate;
 
-  get _scaleEnd => widget.onScaleEnd ?? () {};
+  get _scaleEnd => widget.onScaleEnd;
+
+  get _doubleTap => widget.onDoubleTap;
+
+  get _minScale => widget.minScale;
+
+  get _maxScale => widget.maxScale;
 
   bool _panning = false;
   bool _zooming = false;
@@ -231,7 +263,7 @@ class __GestureDetectorState extends State<_GestureDetector> {
         _scaleStart();
         _zooming = true;
       }
-      _tmpZoom = _zoom * _.scale;
+      _tmpZoom = (_zoom * _.scale).clamp(_minScale, _maxScale);
       _scaleUpdate(_tmpZoom);
     }
   }
@@ -257,6 +289,7 @@ class __GestureDetectorState extends State<_GestureDetector> {
 
   Widget build(BuildContext context) {
     return GestureDetector(
+        onDoubleTap: _doubleTap,
         onScaleStart: _start,
         onScaleUpdate: _update,
         onScaleEnd: _end,

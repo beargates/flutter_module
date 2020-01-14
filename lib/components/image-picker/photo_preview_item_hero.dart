@@ -7,6 +7,8 @@ import 'package:photo_manager/photo_manager.dart';
 const _duration = Duration(milliseconds: 246);
 const _minScale = .8;
 
+void fn() {}
+
 class PreviewItem extends StatefulWidget {
   PreviewItem({
     this.tag,
@@ -58,7 +60,7 @@ class _PreviewItemState extends State<PreviewItem>
       }
     }
 
-    setState(() {});
+    _update();
     widget.onPanStatusChange(true);
   }
 
@@ -74,22 +76,39 @@ class _PreviewItemState extends State<PreviewItem>
 
     if (cancel) {
       /// 弹回
-      animate(_delta, Offset.zero);
+      moveWithAnimation(_delta, Offset.zero);
       widget.onPanStatusChange(false);
     } else {
       widget.onWillExit();
     }
   }
 
-  animate(Offset from, Offset to) {
+  moveWithAnimation(Offset from, Offset to) {
+    _animate(
+      Tween(begin: from, end: to),
+      onUpdate: (AnimationController controller, Animation animation) {
+        _delta = animation.value;
+        _scale = _scale + controller.value * (1 - _scale);
+        _update();
+      },
+    );
+  }
+
+  zoomWithAnimation(double from, double to) {
+    _animate(
+      Tween(begin: from, end: to),
+      onUpdate: (AnimationController controller, Animation animation) {
+        _zoom = animation.value;
+        _update();
+      },
+    );
+  }
+
+  _animate(Animatable _animatable, {onUpdate = fn}) {
     AnimationController _controller =
         AnimationController(duration: _duration, vsync: this);
-    Animation _animation = Tween(begin: from, end: to).animate(_controller);
-    _animation.addListener(() {
-      _delta = _animation.value;
-      _scale = _scale + _controller.value * (1 - _scale);
-      setState(() {});
-    });
+    Animation _animation = _animatable.animate(_controller);
+    _animation.addListener(() => onUpdate(_controller, _animation));
     _controller.forward();
   }
 
@@ -100,25 +119,30 @@ class _PreviewItemState extends State<PreviewItem>
   _scaleUpdate(_) {
     _zoom = _;
     _zooming = true;
-    setState(() {});
+    _update();
   }
 
   _scaleEnd(_) {
     _zoom = 1;
     _zooming = false;
     _delta = Offset.zero;
-    setState(() {});
+    _update();
     widget.onScaleStatusChange(false);
   }
 
   _doubleTap() {
     _zooming = !_zooming;
-    _zoom = _zooming ? _maxScaleWhenDoubleTap : 1;
     if (!_zooming) {
       _delta = Offset.zero;
+      zoomWithAnimation(_maxScaleWhenDoubleTap, 1);
+    } else {
+      zoomWithAnimation(1, _maxScaleWhenDoubleTap);
     }
-    setState(() {});
     widget.onScaleStatusChange(_zooming);
+  }
+
+  _update() {
+    setState(() {});
   }
 
   int get _imgWidth => widget.img.width;
@@ -181,8 +205,6 @@ class _PreviewItemState extends State<PreviewItem>
         ));
   }
 }
-
-void fn() {}
 
 class _GestureDetector extends StatefulWidget {
   final Widget child;

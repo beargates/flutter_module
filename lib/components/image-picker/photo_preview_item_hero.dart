@@ -148,8 +148,6 @@ class _PreviewItemState extends State<PreviewItem>
         )
       : widget.child;
 
-  /// todo hero动画完成后有一次闪动
-  /// todo 闪动的原因可能是创建img需要一定的开销，导致从overlay删除到真正的img出现中间有一段黑屏
   Widget build(BuildContext context) {
     var alpha = (_opacity.clamp(0, 1) * 255).toInt();
     var delta = _delta;

@@ -41,6 +41,7 @@ class _PreviewItemState extends State<PreviewItem>
   Offset _delta = Offset.zero;
   double _scale = 1;
   double _opacity = 1;
+  double _tmpZoom = 1;
   double _zoom = 1;
   bool _zooming = false;
   List<double> _deltaYTmp = [];
@@ -113,32 +114,40 @@ class _PreviewItemState extends State<PreviewItem>
   }
 
   _scaleStart() {
-    widget.onScaleStatusChange(true);
+    _zooming = true;
+    widget.onScaleStatusChange(_zooming);
   }
 
   _scaleUpdate(_) {
-    _zoom = _;
-    _zooming = true;
+    _zoom = (_tmpZoom * _.scale).clamp(_minScale, _maxScale);
     _update();
   }
 
   _scaleEnd(_) {
-    _zoom = 1;
-    _zooming = false;
-    _delta = Offset.zero;
-    _update();
-    widget.onScaleStatusChange(false);
+    _tmpZoom = _zoom;
+    if (_tmpZoom <= 1) {
+      _zooming = false;
+      _tmpZoom = 1;
+      _delta = Offset.zero;
+      zoomWithAnimation(_zoom, 1);
+      widget.onScaleStatusChange(_zooming);
+    }
   }
 
   _doubleTap() {
-    _zooming = !_zooming;
-    if (!_zooming) {
+    if (_zooming) {
       _delta = Offset.zero;
-      zoomWithAnimation(_maxScaleWhenDoubleTap, 1);
+      zoomWithAnimation(_zoom, 1);
     } else {
+      _tmpZoom = _maxScaleWhenDoubleTap;
       zoomWithAnimation(1, _maxScaleWhenDoubleTap);
     }
+    _zooming = !_zooming;
     widget.onScaleStatusChange(_zooming);
+  }
+
+  checkPointerDownPos(_) {
+    print(_.localPosition);
   }
 
   _update() {
@@ -185,7 +194,6 @@ class _PreviewItemState extends State<PreviewItem>
         onScaleUpdate: _scaleUpdate,
         onScaleEnd: _scaleEnd,
         onDoubleTap: _doubleTap,
-        maxScale: _maxScale,
         child: Container(
           width: screenWidth,
           height: screenHeight,
@@ -195,10 +203,13 @@ class _PreviewItemState extends State<PreviewItem>
               offset: delta,
               child: Transform.scale(
                 scale: scale * zoom,
-                child: Container(
-                    width: _displaySize.width,
-                    height: _displaySize.height,
-                    child: child),
+                child: Listener(
+                  onPointerDown: checkPointerDownPos,
+                  child: Container(
+                      width: _displaySize.width,
+                      height: _displaySize.height,
+                      child: child),
+                ),
               ),
             ),
           ),
@@ -215,8 +226,6 @@ class _GestureDetector extends StatefulWidget {
   final Function onScaleUpdate;
   final Function onScaleEnd;
   final Function onDoubleTap;
-  final double minScale;
-  final double maxScale;
 
   _GestureDetector({
     this.child,
@@ -227,8 +236,6 @@ class _GestureDetector extends StatefulWidget {
     this.onScaleUpdate = fn,
     this.onScaleEnd = fn,
     this.onDoubleTap = fn,
-    this.minScale = double.negativeInfinity,
-    this.maxScale = double.infinity,
   });
 
   __GestureDetectorState createState() => __GestureDetectorState();
@@ -251,40 +258,42 @@ class __GestureDetectorState extends State<_GestureDetector> {
 
   get _doubleTap => widget.onDoubleTap;
 
-  get _minScale => widget.minScale;
-
-  get _maxScale => widget.maxScale;
-
+  bool _panStarted = false;
   bool _panning = false;
   bool _zooming = false;
   Offset _lastFocalPoint = Offset.zero;
-  double _zoom = 1; // 累计缩放量，累计缩放量小于等于1时，退出缩放模式
-  double _tmpZoom = 1; // 一次缩放操作最终的缩放值
+
   /// 手势控制器
   _start(_) {
     _lastFocalPoint = _.focalPoint;
-    _panStart();
   }
 
   /// 手势控制器
   _update(_) {
-    // 处理缩放
+    /// 平移
     if (_.scale == 1) {
       if (!_panning) {
         _panning = true;
       }
-      var delta = _.focalPoint - _lastFocalPoint;
-      _panUpdate(delta);
+      if (!_panStarted) {
+        _panStarted = true;
+        _panStart();
+      } else {
+        var delta = _.focalPoint - _lastFocalPoint;
+        _panUpdate(delta);
+      }
       _lastFocalPoint = _.focalPoint;
     }
-    // 处理平移
+
+    /// 缩放
     if (!_panning && _.scale != 1) {
       if (!_zooming) {
         _scaleStart();
         _zooming = true;
+      } else {
+        _scaleUpdate(_);
+        print(_.scale);
       }
-      _tmpZoom = (_zoom * _.scale).clamp(_minScale, _maxScale);
-      _scaleUpdate(_tmpZoom);
     }
   }
 
@@ -292,17 +301,13 @@ class __GestureDetectorState extends State<_GestureDetector> {
   /// bug: end触发两次
   _end(_) {
     if (_zooming) {
-      _zoom = _tmpZoom;
-      if (_tmpZoom <= 1) {
-        _zooming = false;
-        _tmpZoom = 1;
-        _zoom = 1;
-        _scaleEnd(_);
-      }
+      _scaleEnd(_);
     }
     if (_panning) {
       _panEnd(null);
     }
+    _panStarted = false;
+    _zooming = false;
     _panning = false;
     _lastFocalPoint = Offset.zero;
   }

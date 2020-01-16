@@ -32,19 +32,31 @@ class PreviewItem extends StatefulWidget {
 }
 
 class _PreviewItemState extends State<PreviewItem>
-    with TickerProviderStateMixin {
+    with SingleTickerProviderStateMixin {
   static final double screenWidth =
       window.physicalSize.width / window.devicePixelRatio;
   static final double screenHeight =
       window.physicalSize.height / window.devicePixelRatio;
 
+  AnimationController _controller;
+
   Offset _delta = Offset.zero;
+  Offset _scaleDelta = Offset.zero;
+  Offset _forwardDelta = Offset.zero; // 放大时作的修正，使放大中心尽量处在屏幕中间且图片内容尽可能都显示在屏幕上
+  Offset _origin = Offset.zero; // _scaleOrigin的临时值
+  Offset _scaleOrigin = Offset.zero; // 不使用_origin作为缩放中心的原因是，希望缩小的时候使用跟放大时是同一个点
   double _scale = 1;
   double _opacity = 1;
   double _tmpZoom = 1;
   double _zoom = 1;
   bool _zooming = false;
   List<double> _deltaYTmp = [];
+
+  initState() {
+    super.initState();
+
+    _controller = AnimationController(duration: _duration, vsync: this);
+  }
 
   _panUpdate(delta) {
     _delta += delta;
@@ -95,19 +107,28 @@ class _PreviewItemState extends State<PreviewItem>
     );
   }
 
-  zoomWithAnimation(double from, double to) {
+  zoomWithAnimation(double from, double to, {Offset offset}) {
+    Animation moveAnimation;
+    if (offset != null) {
+      /// todo 计算_delta
+      Animatable<Offset> animatable =
+          Tween(begin: _forwardDelta, end: _forwardDelta + offset);
+      moveAnimation = animatable.animate(_controller);
+      _forwardDelta = _forwardDelta + offset;
+    }
+
     _animate(
       Tween(begin: from, end: to),
       onUpdate: (AnimationController controller, Animation animation) {
         _zoom = animation.value;
+        _scaleDelta = moveAnimation?.value ?? _scaleDelta;
         _update();
       },
     );
   }
 
   _animate(Animatable _animatable, {onUpdate = fn}) {
-    AnimationController _controller =
-        AnimationController(duration: _duration, vsync: this);
+    _controller.reset();
     Animation _animation = _animatable.animate(_controller);
     _animation.addListener(() => onUpdate(_controller, _animation));
     _controller.forward();
@@ -119,7 +140,7 @@ class _PreviewItemState extends State<PreviewItem>
   }
 
   _scaleUpdate(_) {
-    _zoom = (_tmpZoom * _.scale).clamp(_minScale, _maxScale);
+    _zoom = (_tmpZoom * _.scale).clamp(double.negativeInfinity, _maxScale);
     _update();
   }
 
@@ -137,17 +158,48 @@ class _PreviewItemState extends State<PreviewItem>
   _doubleTap() {
     if (_zooming) {
       _delta = Offset.zero;
-      zoomWithAnimation(_zoom, 1);
+
+      zoomWithAnimation(_zoom, 1, offset: -_forwardDelta);
     } else {
       _tmpZoom = _maxScaleWhenDoubleTap;
-      zoomWithAnimation(1, _maxScaleWhenDoubleTap);
+
+      /// 改变锚点位置为图片的center（默认左上角）
+      _scaleOrigin = _origin - _displaySize.toOffset() / 2;
+
+      double from = 1;
+      double to = _maxScaleWhenDoubleTap;
+      var scale = to / from;
+
+      /// 缩放方向
+      var symbolX = _scaleOrigin.dx / _scaleOrigin.dx.abs();
+      var symbolY = _scaleOrigin.dy / _scaleOrigin.dy.abs();
+
+      var displaySize =
+          Offset(_displaySize.width * -symbolX, _displaySize.height * -symbolY);
+
+      /// 将点击位置最近的顶点移至中心
+      Offset offset = displaySize * scale / 2;
+
+      /// 位移
+      var delta = offset.abs() - (_scaleOrigin * scale).abs();
+      // 修正
+      delta = Offset(
+        delta.dx.clamp(screenWidth / 2, double.infinity),
+        delta.dy.clamp(screenHeight / 2, double.infinity),
+      );
+      delta = Offset(delta.dx * -symbolX, delta.dy * -symbolY);
+
+      offset = offset - delta;
+
+      zoomWithAnimation(from, to, offset: offset);
     }
     _zooming = !_zooming;
     widget.onScaleStatusChange(_zooming);
   }
 
   checkPointerDownPos(_) {
-    print(_.localPosition);
+    _origin = _.localPosition;
+    _update();
   }
 
   _update() {
@@ -183,7 +235,7 @@ class _PreviewItemState extends State<PreviewItem>
 
   Widget build(BuildContext context) {
     var alpha = (_opacity.clamp(0, 1) * 255).toInt();
-    var delta = _delta;
+    var delta = _delta + _scaleDelta;
     var scale = _scale.clamp(_minScale, 1).toDouble();
     var zoom = _zoom.clamp(double.negativeInfinity, _maxScale);
     return _GestureDetector(
@@ -195,8 +247,6 @@ class _PreviewItemState extends State<PreviewItem>
         onScaleEnd: _scaleEnd,
         onDoubleTap: _doubleTap,
         child: Container(
-          width: screenWidth,
-          height: screenHeight,
           color: Color.fromARGB(alpha, 0, 0, 0),
           child: Center(
             child: Transform.translate(
@@ -214,6 +264,22 @@ class _PreviewItemState extends State<PreviewItem>
             ),
           ),
         ));
+  }
+}
+
+extension _Size on Size {
+  Offset toOffset() {
+    return Offset(this.width, this.height);
+  }
+}
+
+extension _Offset on Offset {
+  Offset abs() {
+    return Offset(this.dx.abs(), this.dy.abs());
+  }
+
+  Offset operator *(Offset offset) {
+    return Offset(this.dx * offset.dx, this.dy * offset.dy);
   }
 }
 
@@ -292,7 +358,6 @@ class __GestureDetectorState extends State<_GestureDetector> {
         _zooming = true;
       } else {
         _scaleUpdate(_);
-        print(_.scale);
       }
     }
   }

@@ -68,8 +68,8 @@ class _PhotoPreviewState extends State<PhotoPreview> {
   void didUpdateWidget(PhotoPreview oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    if (!_mountTriggered) {
-      widget?.onMount();
+    if (!_mountTriggered && widget.onMount != null) {
+      widget.onMount();
     }
   }
 

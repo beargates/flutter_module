@@ -9,6 +9,8 @@ const _minScale = .8;
 
 void fn() {}
 
+void animateCallback(AnimationController c, Animation a) {}
+
 class PreviewItem extends StatefulWidget {
   PreviewItem({
     this.tag,
@@ -143,15 +145,22 @@ class _PreviewItemState extends State<PreviewItem>
     );
   }
 
-  _animate(Animatable _animatable, {onUpdate = fn, onComplete = fn}) {
+  _animate(Animatable _animatable,
+      {onUpdate = animateCallback, onComplete = animateCallback}) {
     _controller.reset();
     Animation _animation = _animatable.animate(_controller);
-    _animation.addListener(() => onUpdate(_controller, _animation));
-    _animation.addStatusListener((status) {
+    var updater = () => onUpdate(_controller, _animation);
+    var statusChangeUpdater;
+    statusChangeUpdater = (status) {
       if (status == AnimationStatus.completed) {
         onComplete(_controller, _animation);
+
+        _animation.removeListener(updater);
+        _animation.removeStatusListener(statusChangeUpdater);
       }
-    });
+    };
+    _animation.addListener(updater);
+    _animation.addStatusListener(statusChangeUpdater);
     _controller.forward();
   }
 

@@ -31,6 +31,7 @@ class PreviewItem extends StatefulWidget {
   _PreviewItemState createState() => _PreviewItemState();
 }
 
+/// todo 动画过程中，不处理手势
 class _PreviewItemState extends State<PreviewItem>
     with SingleTickerProviderStateMixin {
   static final double screenWidth =
@@ -54,6 +55,9 @@ class _PreviewItemState extends State<PreviewItem>
   double _zoom = 1;
   bool _zooming = false;
 
+  /// 计算图片移动的范围，缩放后该值发生变化
+  Offset clampArea = Offset.zero;
+
   /// 用于判定'取消退出预览'手势
   List<double> _deltaYTmp = [];
 
@@ -76,6 +80,12 @@ class _PreviewItemState extends State<PreviewItem>
       } else {
         _deltaYTmp = [];
       }
+    } else {
+      // 修正
+      _delta = Offset(
+        _delta.dx.clamp(-clampArea.dx, clampArea.dx),
+        _delta.dy.clamp(-clampArea.dy, clampArea.dy),
+      );
     }
 
     _update();
@@ -122,20 +132,26 @@ class _PreviewItemState extends State<PreviewItem>
 
     _animate(
       Tween(begin: from, end: to),
-      onUpdate: (AnimationController controller, Animation animation) {
-        _zoom = animation.value;
-        if (moveAnimation != null) {
-          _delta = moveAnimation.value;
-        }
+      onUpdate: (AnimationController c, Animation a) {
+        _zoom = a.value.clamp(0, _maxScale);
+        _delta = moveAnimation?.value ?? _delta;
         _update();
+      },
+      onComplete: (AnimationController c, Animation a) {
+        _handleZoomUpdate(a.value);
       },
     );
   }
 
-  _animate(Animatable _animatable, {onUpdate = fn}) {
+  _animate(Animatable _animatable, {onUpdate = fn, onComplete = fn}) {
     _controller.reset();
     Animation _animation = _animatable.animate(_controller);
     _animation.addListener(() => onUpdate(_controller, _animation));
+    _animation.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        onComplete(_controller, _animation);
+      }
+    });
     _controller.forward();
   }
 
@@ -145,8 +161,9 @@ class _PreviewItemState extends State<PreviewItem>
   }
 
   _scaleUpdate(_) {
-    _zoom = (_tmpZoom * _.scale).clamp(double.negativeInfinity, _maxScale);
+    _zoom = (_tmpZoom * _.scale).clamp(0, _maxScale);
     _update();
+    _handleZoomUpdate(_zoom);
   }
 
   _scaleEnd(_) {
@@ -162,10 +179,15 @@ class _PreviewItemState extends State<PreviewItem>
 
   _doubleTap() {
     if (_zooming) {
+      /// 缩小
       zoomWithAnimation(_zoom, 1, offset: -_delta);
     } else {
+      /// 放大
       _tmpZoom = _maxScaleWhenDoubleTap;
 
+      /// 两个思路
+      /// 1。屏幕不动，移动图片
+      /// 2。图片不动，移动屏幕（镜头）
       /// 改变锚点位置为图片的center（默认左上角）
       _scaleOrigin = _origin - _displaySize.toOffset() / 2;
 
@@ -178,7 +200,7 @@ class _PreviewItemState extends State<PreviewItem>
       var symbolY = _scaleOrigin.dy / _scaleOrigin.dy.abs();
 
       var displaySize =
-          Offset(_displaySize.width * -symbolX, _displaySize.height * -symbolY);
+          _displaySize.toOffset().addDirection(-symbolX, -symbolY);
 
       /// 将点击位置最近的顶点移至中心
       Offset offset = displaySize * scale / 2;
@@ -190,14 +212,35 @@ class _PreviewItemState extends State<PreviewItem>
         delta.dx.clamp(screenWidth / 2, double.infinity),
         delta.dy.clamp(screenHeight / 2, double.infinity),
       );
-      delta = Offset(delta.dx * -symbolX, delta.dy * -symbolY);
+      delta = delta.addDirection(-symbolX, -symbolY);
 
       offset = offset - delta;
+
+//      /// 从镜头移动的视角，把屏幕当成镜头
+//      /// 左上角移至屏幕center需要的位移
+//      Offset a = _displaySize.toOffset() * scale / 2;
+//
+//      /// 点击点距离左上角的offset
+//      Offset b = _origin * scale;
+//
+//      /// 点击点移至屏幕center需要的位移
+//      offset = a - b;
+//
+//      /// 修正
+//      offset = offset.clamp(
+//        Offset(screenWidth / 2, screenHeight / 2),
+//        a - Offset(screenWidth / 2, screenHeight / 2),
+//      );
+//      offset = offset.addDirection(-symbolX, -symbolY);
 
       zoomWithAnimation(from, to, offset: offset);
     }
     _zooming = !_zooming;
     widget.onScaleStatusChange(_zooming);
+  }
+
+  _handleZoomUpdate(double zoom) {
+    clampArea = getClampArea(zoom);
   }
 
   checkPointerDownPos(_) {
@@ -214,10 +257,11 @@ class _PreviewItemState extends State<PreviewItem>
   int get _imgHeight => widget.img.height;
 
   /// 缩放的极限
-  double get _maxScale => _imgWidth / _displaySize.width;
+  double get _maxScale => (_imgWidth / _displaySize.width)
+      .clamp(_maxScaleWhenDoubleTap, double.infinity);
 
   /// 双击时缩放到屏幕高度的1.1倍
-  double get _maxScaleWhenDoubleTap => _imgHeight / screenHeight * 1.1;
+  double get _maxScaleWhenDoubleTap => screenHeight * 1.1 / _displaySize.height;
 
   Size get _displaySize {
     var _r = math.min(screenWidth / _imgWidth, screenHeight / _imgHeight);
@@ -225,6 +269,8 @@ class _PreviewItemState extends State<PreviewItem>
     var height = (_imgHeight * _r).floor().toDouble();
     return Size(width, height);
   }
+
+  Size get screenSize => Size(screenWidth, screenHeight);
 
   Widget get child => widget.tag != null
       ? Hero(
@@ -236,11 +282,23 @@ class _PreviewItemState extends State<PreviewItem>
         )
       : widget.child;
 
+  /// 根据当前缩放值计算_delta的活动范围
+  /// 比如当前返回（516.8, 31）则表示活动区域为
+  /// （516.8, 31）---（-516.8, 31）
+  ///      ｜       |        ｜
+  ///      ｜----（0, 0）----｜
+  ///      ｜       |       ｜
+  /// （516.8, -31）---（-516.8, -31）
+  Offset getClampArea(double scale) {
+    assert(scale >= 1);
+    return (_displaySize.toOffset() * scale - screenSize.toOffset()) / 2;
+  }
+
   Widget build(BuildContext context) {
     var alpha = (_opacity.clamp(0, 1) * 255).toInt();
     var delta = _delta;
     var scale = _scale.clamp(_minScale, 1).toDouble();
-    var zoom = _zoom.clamp(double.negativeInfinity, _maxScale);
+    var zoom = _zoom;
     return _GestureDetector(
 //        onPanStart: _panStart,
         onPanUpdate: _panUpdate,
@@ -283,6 +341,19 @@ extension _Offset on Offset {
 
   Offset operator *(Offset offset) {
     return Offset(this.dx * offset.dx, this.dy * offset.dy);
+  }
+
+  Offset clamp(Offset min, Offset max) {
+    return Offset(
+      this.dx.clamp(min.dx, max.dx),
+      this.dy.clamp(min.dy, max.dy),
+    );
+  }
+
+  /// 变成向量
+  /// positiveX,positiveY通常是+1或者-1
+  Offset addDirection(double positiveX, double positiveY) {
+    return Offset(this.dx * positiveX, this.dy * positiveY);
   }
 }
 

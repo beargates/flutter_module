@@ -40,16 +40,21 @@ class _PreviewItemState extends State<PreviewItem>
 
   AnimationController _controller;
 
+  /// 位移
   Offset _delta = Offset.zero;
-  Offset _scaleDelta = Offset.zero;
-  Offset _forwardDelta = Offset.zero; // 放大时作的修正，使放大中心尽量处在屏幕中间且图片内容尽可能都显示在屏幕上
-  Offset _origin = Offset.zero; // _scaleOrigin的临时值
-  Offset _scaleOrigin = Offset.zero; // 不使用_origin作为缩放中心的原因是，希望缩小的时候使用跟放大时是同一个点
+
+  /// _scaleOrigin的临时值，每次点击屏幕（即双击屏幕前）生成，因双击回调中取不到点击的坐标
+  Offset _origin = Offset.zero;
+
+  /// 不使用_origin作为缩放中心的原因是，希望缩小的时候使用跟放大时是同一个点
+  Offset _scaleOrigin = Offset.zero;
   double _scale = 1;
   double _opacity = 1;
   double _tmpZoom = 1;
   double _zoom = 1;
   bool _zooming = false;
+
+  /// 用于判定'取消退出预览'手势
   List<double> _deltaYTmp = [];
 
   initState() {
@@ -110,18 +115,18 @@ class _PreviewItemState extends State<PreviewItem>
   zoomWithAnimation(double from, double to, {Offset offset}) {
     Animation moveAnimation;
     if (offset != null) {
-      /// todo 计算_delta
       Animatable<Offset> animatable =
-          Tween(begin: _forwardDelta, end: _forwardDelta + offset);
+          Tween(begin: _delta, end: _delta + offset);
       moveAnimation = animatable.animate(_controller);
-      _forwardDelta = _forwardDelta + offset;
     }
 
     _animate(
       Tween(begin: from, end: to),
       onUpdate: (AnimationController controller, Animation animation) {
         _zoom = animation.value;
-        _scaleDelta = moveAnimation?.value ?? _scaleDelta;
+        if (moveAnimation != null) {
+          _delta = moveAnimation.value;
+        }
         _update();
       },
     );
@@ -157,9 +162,7 @@ class _PreviewItemState extends State<PreviewItem>
 
   _doubleTap() {
     if (_zooming) {
-      _delta = Offset.zero;
-
-      zoomWithAnimation(_zoom, 1, offset: -_forwardDelta);
+      zoomWithAnimation(_zoom, 1, offset: -_delta);
     } else {
       _tmpZoom = _maxScaleWhenDoubleTap;
 
@@ -235,7 +238,7 @@ class _PreviewItemState extends State<PreviewItem>
 
   Widget build(BuildContext context) {
     var alpha = (_opacity.clamp(0, 1) * 255).toInt();
-    var delta = _delta + _scaleDelta;
+    var delta = _delta;
     var scale = _scale.clamp(_minScale, 1).toDouble();
     var zoom = _zoom.clamp(double.negativeInfinity, _maxScale);
     return _GestureDetector(

@@ -11,6 +11,8 @@ void fn() {}
 
 void animateCallback(AnimationController c, Animation a) {}
 
+void scaleEndCallback(ScaleEndDetails details) {}
+
 class PreviewItem extends StatefulWidget {
   PreviewItem({
     this.tag,
@@ -44,7 +46,24 @@ class _PreviewItemState extends State<PreviewItem>
   AnimationController _controller;
 
   /// 位移
-  Offset _delta = Offset.zero;
+  Offset __delta = Offset.zero;
+
+  get _delta => __delta;
+
+  set _delta(Offset _) {
+    if (_zooming) {
+      /// 使不超出移动范围
+      // 只要双击缩放系数不是1，clampArea就不可能是0
+      // 如果手动缩放到1，那么也将退出缩放模式，即_zooming是false
+      assert(clampArea != null && clampArea != Offset.zero);
+      __delta = Offset(
+        _.dx.clamp(-clampArea.dx, clampArea.dx),
+        _.dy.clamp(-clampArea.dy, clampArea.dy),
+      );
+    } else {
+      __delta = _;
+    }
+  }
 
   /// _scaleOrigin的临时值，每次点击屏幕（即双击屏幕前）生成，因双击回调中取不到点击的坐标
   Offset _origin = Offset.zero;
@@ -55,6 +74,8 @@ class _PreviewItemState extends State<PreviewItem>
   double _opacity = 1;
   double _tmpZoom = 1;
   double _zoom = 1;
+
+  /// 代表缩放状态，'双击进入缩放'动画结束才为true，'双击结束缩放'动画结束才为false
   bool _zooming = false;
 
   /// 计算图片移动的范围，缩放后该值发生变化
@@ -82,12 +103,6 @@ class _PreviewItemState extends State<PreviewItem>
       } else {
         _deltaYTmp = [];
       }
-    } else {
-      // 修正
-      _delta = Offset(
-        _delta.dx.clamp(-clampArea.dx, clampArea.dx),
-        _delta.dy.clamp(-clampArea.dy, clampArea.dy),
-      );
     }
 
     _update();
@@ -95,7 +110,19 @@ class _PreviewItemState extends State<PreviewItem>
   }
 
   _panEnd(_) {
-    if (_zooming) return;
+    if (_zooming) {
+      /// 处理松开手指时的加速度
+      var v = _.velocity.pixelsPerSecond;
+      if (v != Offset.zero) {
+        var ms = _controller.duration.inMilliseconds;
+        // 不满足1毫秒时，该值返回0，因为返回值类型是int
+        if (ms != 0) {
+          var offset = v * (ms / 1000);
+          moveWithAnimation(_delta, _delta + offset);
+        }
+      }
+      return;
+    }
 
     /// 取消动作判定
     var cancel = _deltaYTmp.length >= 3;
@@ -124,7 +151,7 @@ class _PreviewItemState extends State<PreviewItem>
     );
   }
 
-  zoomWithAnimation(double from, double to, {Offset offset}) {
+  zoomWithAnimation(double from, double to, {Offset offset, onComplete = fn}) {
     Animation moveAnimation;
     if (offset != null) {
       Animatable<Offset> animatable =
@@ -141,6 +168,7 @@ class _PreviewItemState extends State<PreviewItem>
       },
       onComplete: (AnimationController c, Animation a) {
         _handleZoomUpdate(a.value);
+        onComplete();
       },
     );
   }
@@ -186,11 +214,16 @@ class _PreviewItemState extends State<PreviewItem>
     }
   }
 
+  _zoomComplete() {
+    _zooming = !_zooming;
+    widget.onScaleStatusChange(_zooming);
+  }
+
   _doubleTap() {
     if (_zooming) {
       /// 缩小
       _tmpZoom = 1;
-      zoomWithAnimation(_zoom, 1, offset: -_delta);
+      zoomWithAnimation(_zoom, 1, offset: -_delta, onComplete: _zoomComplete);
     } else {
       /// 放大
       _tmpZoom = _maxScaleWhenDoubleTap;
@@ -243,10 +276,8 @@ class _PreviewItemState extends State<PreviewItem>
 //      );
 //      offset = offset.addDirection(-symbolX, -symbolY);
 
-      zoomWithAnimation(from, to, offset: offset);
+      zoomWithAnimation(from, to, offset: offset, onComplete: _zoomComplete);
     }
-    _zooming = !_zooming;
-    widget.onScaleStatusChange(_zooming);
   }
 
   _handleZoomUpdate(double zoom) {
@@ -301,6 +332,7 @@ class _PreviewItemState extends State<PreviewItem>
   /// （516.8, -31）---（-516.8, -31）
   Offset getClampArea(double scale) {
     var area = (_displaySize.toOffset() * scale - screenSize.toOffset()) / 2;
+
     /// 不能为负，为负说明图片放大尺寸没有达到屏幕尺寸，也就不能有该方向上的位移
     return area.clamp(Offset.zero, Offset.infinite);
   }
@@ -372,20 +404,20 @@ class _GestureDetector extends StatefulWidget {
   final Widget child;
   final Function onPanStart;
   final Function onPanUpdate;
-  final Function onPanEnd;
+  final GestureScaleEndCallback onPanEnd;
   final Function onScaleStart;
   final Function onScaleUpdate;
-  final Function onScaleEnd;
+  final GestureScaleEndCallback onScaleEnd;
   final Function onDoubleTap;
 
   _GestureDetector({
     this.child,
     this.onPanStart = fn,
     this.onPanUpdate = fn,
-    this.onPanEnd = fn,
+    this.onPanEnd = scaleEndCallback,
     this.onScaleStart = fn,
     this.onScaleUpdate = fn,
-    this.onScaleEnd = fn,
+    this.onScaleEnd = scaleEndCallback,
     this.onDoubleTap = fn,
   });
 
@@ -454,7 +486,7 @@ class __GestureDetectorState extends State<_GestureDetector> {
       _scaleEnd(_);
     }
     if (_panning) {
-      _panEnd(null);
+      _panEnd(_);
     }
     _panStarted = false;
     _zooming = false;

@@ -189,6 +189,7 @@ class _PreviewItemState extends State<PreviewItem>
   _doubleTap() {
     if (_zooming) {
       /// 缩小
+      _tmpZoom = 1;
       zoomWithAnimation(_zoom, 1, offset: -_delta);
     } else {
       /// 放大
@@ -299,8 +300,9 @@ class _PreviewItemState extends State<PreviewItem>
   ///      ｜       |       ｜
   /// （516.8, -31）---（-516.8, -31）
   Offset getClampArea(double scale) {
-    assert(scale >= 1);
-    return (_displaySize.toOffset() * scale - screenSize.toOffset()) / 2;
+    var area = (_displaySize.toOffset() * scale - screenSize.toOffset()) / 2;
+    /// 不能为负，为负说明图片放大尺寸没有达到屏幕尺寸，也就不能有该方向上的位移
+    return area.clamp(Offset.zero, Offset.infinite);
   }
 
   Widget build(BuildContext context) {

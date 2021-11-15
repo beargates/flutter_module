@@ -33,7 +33,7 @@ class QiniuUploader {
     var id = uuid.v4();
     String extraName = file.path.split('.').last;
     String key = id + '.' + extraName;
-    String url = 'https://img.txqn.huohua.cn/' + key;
+    String url = 'https://img.txqn.xxx.cn/' + key;
     // 上传文件
     bool result = await syStorage.upload(file.path, token, key);
     if (result) {

@@ -17,11 +17,8 @@ class _MineState extends State<Mine> with SingleTickerProviderStateMixin {
   ScrollController _controller = ScrollController();
   Color bgColor = const Color(0xFF151722);
   List<String> videoList = [
-    'https://asset.txqn.huohua.cn/video/79663ecf-e10c-4452-9496-9eb8051b9af5.mp4',
-    'https://asset.txqn.huohua.cn/video/68b83e93-72b9-465d-9b13-8b100f1ec1c8.mp4',
-    'https://asset.txqn.huohua.cn/video/357cd502-f288-4aee-81bf-756e512d3fc9.mp4',
-    'https://asset.txqn.huohua.cn/video/5c9869bc-22e7-49b8-b259-43b8e2d85c5d.mp4',
-    'https://asset.txqn.huohua.cn/video/c5c233a5-1d70-4cb4-89f0-02fe90a78c6c.mp4',
+    // https://xxx.mp4
+    // ...
   ];
   List _list;
   String thumbQuery = '?vframe/jpg/offset/0';

@@ -15,12 +15,8 @@ class _FeedsState extends State<Feeds> {
   final double bottomTabBarHeight =
       MediaQueryData.fromWindow(window).padding.bottom;
   List<String> videoList = [
-    'https://asset.txqn.huohua.cn/video/0f2a0ebb-c2c6-495d-925f-4a8b97671a36.mp4',
-    'https://asset.txqn.huohua.cn/video/79663ecf-e10c-4452-9496-9eb8051b9af5.mp4',
-    'https://asset.txqn.huohua.cn/video/68b83e93-72b9-465d-9b13-8b100f1ec1c8.mp4',
-    'https://asset.txqn.huohua.cn/video/357cd502-f288-4aee-81bf-756e512d3fc9.mp4',
-    'https://asset.txqn.huohua.cn/video/5c9869bc-22e7-49b8-b259-43b8e2d85c5d.mp4',
-    'https://asset.txqn.huohua.cn/video/c5c233a5-1d70-4cb4-89f0-02fe90a78c6c.mp4',
+    // https://xxx.mp4
+    // ...
   ];
   String thumbQuery = '?vframe/jpg/offset/0';
   PageController _controller = PageController();

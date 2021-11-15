@@ -5,7 +5,7 @@ import 'package:uuid/uuid.dart';
 import '../../utils/request.dart';
 
 var uuid = new Uuid();
-String urlGetToken = 'https://api.qa.huohua.cn/upload/token';
+String urlGetToken = 'https://xxx/token';
 
 class QiniuUploader {
   double _process = 0.0;
@@ -22,8 +22,7 @@ class QiniuUploader {
       return re;
     }
     var data = await Request.get(urlGetToken);
-    String token =
-        'bZ-bO9KpdyID3VNOjkP0Rba091tU68RvZctJ5N-D:nTUHMD22Y8kjyrvT1QownnuIsKc=:eyJzY29wZSI6Imh1b2h1YSIsImRlYWRsaW5lIjoxNTY0MDQ0NDA2fQ==';
+    String token = 'token';
     if (data != null) {
       token = data['data'];
     }
